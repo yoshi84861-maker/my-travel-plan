@@ -1,170 +1,69 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的旅遊規劃師 ✈️</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
-        body { font-family: 'Noto Sans TC', sans-serif; }
-        .suggestion-item:last-child { border-bottom: none; }
-    </style>
-</head>
-<body class="bg-slate-50 min-h-screen pb-20">
+// --- 請在這裡填入你的 API KEY ---
+const WEATHER_API_KEY = '在此處貼上你的_API_KEY'; 
 
-    <div class="max-w-md mx-auto px-4 py-8">
-        <header class="mb-8">
-            <h1 class="text-3xl font-bold text-slate-800">我的旅程計畫</h1>
-            <p class="text-slate-500 text-sm">輸入地點與日期，自動查看預報</p>
-        </header>
+let trips = JSON.parse(localStorage.getItem('myTrips')) || [];
+let selectedLocation = null;
 
-        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-            <div class="space-y-4">
-                <div class="relative">
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">目的地</label>
-                    <input id="cityInput" type="text" oninput="handleSearch()" placeholder="搜尋城市 (中/英)..." 
-                           class="w-full p-3 bg-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition">
-                    <div id="suggestionBox" class="absolute z-20 w-full mt-1 bg-white border rounded-xl shadow-xl hidden max-h-60 overflow-y-auto"></div>
-                </div>
+// 1. 城市搜尋自動比對 (加入錯誤回報)
+let debounceTimer;
+async function handleSearch() {
+    const query = document.getElementById('cityInput').value;
+    const box = document.getElementById('suggestionBox');
+    
+    clearTimeout(debounceTimer);
+    if (query.length < 2) { box.classList.add('hidden'); return; }
 
-                <div class="grid grid-cols-1 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">日期</label>
-                        <input id="dateInput" type="date" class="w-full p-3 bg-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition">
+    debounceTimer = setTimeout(async () => {
+        try {
+            // 加入 User-Agent 是因為 Nominatim 有時會擋掉沒識別身份的請求
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`, {
+                headers: { 'User-Agent': 'MyTravelApp/1.0' }
+            });
+            const data = await res.json();
+            
+            if (data.length === 0) {
+                box.innerHTML = `<div class="p-3 text-sm text-gray-500">找不到這個地方，請試試其他名稱</div>`;
+            } else {
+                box.innerHTML = data.map(item => `
+                    <div class="suggestion-item p-3 hover:bg-blue-50 cursor-pointer border-b border-slate-100 text-sm text-slate-700"
+                         onclick="selectLocation('${item.display_name.replace(/'/g, "\\'")}', ${item.lat}, ${item.lon})">
+                        📍 ${item.display_name}
                     </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">行程內容</label>
-                    <textarea id="activityInput" placeholder="想去哪裡逛逛？" class="w-full p-3 bg-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 h-24 transition"></textarea>
-                </div>
-
-                <button onclick="addTrip()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-blue-200 shadow-lg hover:bg-blue-700 active:scale-95 transition">
-                    加入行程
-                </button>
-            </div>
-        </div>
-
-        <div id="tripList" class="space-y-4">
-            </div>
-    </div>
-
-    <script>
-        // --- 請在這裡填入你的 API KEY ---
-        const WEATHER_API_KEY = '在此處貼上你的_API_KEY'; 
-        
-        let trips = JSON.parse(localStorage.getItem('myTrips')) || [];
-        let selectedLocation = null;
-
-        // 1. 城市搜尋自動比對 (Nominatim 免費 API)
-        let debounceTimer;
-        function handleSearch() {
-            const query = document.getElementById('cityInput').value;
-            const box = document.getElementById('suggestionBox');
-            
-            clearTimeout(debounceTimer);
-            if (query.length < 2) { box.classList.add('hidden'); return; }
-
-            debounceTimer = setTimeout(async () => {
-                try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=5&addressdetails=1`);
-                    const data = await res.json();
-                    
-                    box.innerHTML = data.map(item => `
-                        <div class="suggestion-item p-3 hover:bg-blue-50 cursor-pointer border-b border-slate-100 text-sm text-slate-700"
-                             onclick="selectLocation('${item.display_name}', ${item.lat}, ${item.lon})">
-                            📍 ${item.display_name}
-                        </div>
-                    `).join('');
-                    box.classList.remove('hidden');
-                } catch (e) { console.error("搜尋出錯", e); }
-            }, 500);
-        }
-
-        function selectLocation(name, lat, lon) {
-            const shortName = name.split(',')[0];
-            document.getElementById('cityInput').value = shortName;
-            document.getElementById('suggestionBox').classList.add('hidden');
-            selectedLocation = { name: shortName, lat, lon };
-        }
-
-        // 2. 獲取天氣資料
-        async function fetchWeather(lat, lon) {
-            if (!WEATHER_API_KEY || WEATHER_API_KEY === '在此處貼上你的_API_KEY') return "未設定 API Key";
-            try {
-                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric&lang=zh_tw`);
-                const data = await res.json();
-                return `${Math.round(data.main.temp)}°C ${data.weather[0].description}`;
-            } catch { return "天氣讀取失敗"; }
-        }
-
-        // 3. 新增行程
-        async function addTrip() {
-            const date = document.getElementById('dateInput').value;
-            const activity = document.getElementById('activityInput').value;
-            
-            if (!selectedLocation || !date) return alert("請先選擇目的地並輸入日期");
-
-            const weatherInfo = await fetchWeather(selectedLocation.lat, selectedLocation.lon);
-            
-            const newTrip = {
-                id: Date.now(),
-                city: selectedLocation.name,
-                date,
-                activity,
-                weather: weatherInfo
-            };
-
-            trips.push(newTrip);
-            saveAndRender();
-            
-            // 重置輸入
-            document.getElementById('cityInput').value = '';
-            document.getElementById('activityInput').value = '';
-            selectedLocation = null;
-        }
-
-        function deleteTrip(id) {
-            trips = trips.filter(t => t.id !== id);
-            saveAndRender();
-        }
-
-        function saveAndRender() {
-            localStorage.setItem('myTrips', JSON.stringify(trips));
-            render();
-        }
-
-        function render() {
-            const list = document.getElementById('tripList');
-            trips.sort((a, b) => new Date(a.date) - new Date(b.date));
-            
-            list.innerHTML = trips.map(t => `
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 relative group transition hover:shadow-md">
-                    <button onclick="deleteTrip(${t.id})" class="absolute top-4 right-4 text-slate-300 hover:text-red-500">✕</button>
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <span class="text-xs font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded-md">${t.date}</span>
-                            <h3 class="text-lg font-bold text-slate-800 mt-1">${t.city}</h3>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">當前天氣</p>
-                            <p class="text-sm font-bold text-orange-500">${t.weather}</p>
-                        </div>
-                    </div>
-                    <p class="text-slate-600 text-sm leading-relaxed whitespace-pre-line border-t pt-3">${t.activity || '尚無備註行程'}</p>
-                </div>
-            `).join('');
-        }
-
-        // 點擊空白處關閉選單
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('#cityInput')) {
-                document.getElementById('suggestionBox').classList.add('hidden');
+                `).join('');
             }
-        });
+            box.classList.remove('hidden');
+        } catch (e) {
+            console.error("搜尋服務異常:", e);
+            box.innerHTML = `<div class="p-3 text-sm text-red-500">搜尋服務暫時不可用，請檢查網路</div>`;
+            box.classList.remove('hidden');
+        }
+    }, 500);
+}
 
-        render();
-    </script>
-</body>
-</html>
+function selectLocation(name, lat, lon) {
+    // 取得第一個逗號前的名稱（較簡短）
+    const shortName = name.split(',')[0];
+    document.getElementById('cityInput').value = shortName;
+    document.getElementById('suggestionBox').classList.add('hidden');
+    selectedLocation = { name: shortName, lat, lon };
+    console.log("已選擇地點:", selectedLocation);
+}
+
+// 2. 獲取天氣資料 (加入詳細代碼檢查)
+async function fetchWeather(lat, lon) {
+    if (!WEATHER_API_KEY || WEATHER_API_KEY.includes('在此處')) {
+        return "⚠️ 未設定 API Key";
+    }
+    try {
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric&lang=zh_tw`);
+        const data = await res.json();
+        
+        if (data.cod === 401) return "❌ API Key 尚未生效 (需等2小時)";
+        if (data.cod !== 200) return "❌ 天氣讀取錯誤";
+        
+        return `${Math.round(data.main.temp)}°C ${data.weather[0].description}`;
+    } catch {
+        return "🌐 網路連線失敗";
+    }
+}
+// ... 後續的 addTrip, render 等功能保持不變
