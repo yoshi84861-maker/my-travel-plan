@@ -7,55 +7,63 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
-        .day-page { position: relative; background: white; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); margin-bottom: 2rem; overflow: hidden; }
-        .day-header { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 1.5rem; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f1f5f9; }
+        .day-card { background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 2rem; overflow: hidden; border: 1px solid #e2e8f0; }
+        .day-header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 1.25rem; }
+        .time-badge { background: #eff6ff; color: #1e40af; font-weight: bold; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; border: 1px solid #dbeafe; }
     </style>
 </head>
 <body class="pb-20">
 
     <div class="max-w-md mx-auto px-4 py-8">
         <header class="mb-8 text-center">
-            <h1 class="text-3xl font-bold text-slate-800">旅遊行程表</h1>
-            <p class="text-slate-500">規劃每一天的精彩冒險</p>
+            <h1 class="text-3xl font-bold text-slate-800 tracking-tight">旅程計畫表 ✈️</h1>
+            <p class="text-slate-500 text-sm mt-1">同一天的行程會自動合併顯示</p>
         </header>
 
-        <div class="bg-white rounded-2xl shadow-md p-6 mb-10 border border-slate-100">
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-10 border border-slate-200">
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-slate-400 mb-1">日期</label>
-                        <input id="dateInput" type="date" class="w-full p-2 bg-slate-50 rounded-lg outline-none border focus:border-blue-500 transition">
+                        <input id="dateInput" type="date" class="w-full p-2 bg-slate-50 rounded-lg border outline-none focus:border-blue-500">
                     </div>
-                    <div class="relative">
-                        <label class="block text-xs font-bold text-slate-400 mb-1">目的地 (天氣來源)</label>
-                        <input id="cityInput" type="text" oninput="handleSearch()" placeholder="搜尋..." 
-                               class="w-full p-2 bg-slate-50 rounded-lg outline-none border focus:border-blue-500 transition">
-                        <div id="suggestionBox" class="absolute z-30 w-full mt-1 bg-white border rounded-lg shadow-xl hidden max-h-48 overflow-y-auto text-sm"></div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1">時間</label>
+                        <input id="timeInput" type="time" class="w-full p-2 bg-slate-50 rounded-lg border outline-none focus:border-blue-500">
                     </div>
                 </div>
+                
+                <div class="relative">
+                    <label class="block text-xs font-bold text-slate-400 mb-1">目的地 (影響天氣顯示)</label>
+                    <input id="cityInput" type="text" oninput="handleSearch()" placeholder="搜尋城市..." 
+                           class="w-full p-2 bg-slate-50 rounded-lg border outline-none focus:border-blue-500">
+                    <div id="suggestionBox" class="absolute z-30 w-full mt-1 bg-white border rounded-lg shadow-xl hidden max-h-48 overflow-y-auto text-sm"></div>
+                </div>
+
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1">活動內容</label>
-                    <input id="activityInput" type="text" placeholder="例如：去吃拉麵、參觀博物館..." 
-                           class="w-full p-3 bg-slate-50 rounded-lg outline-none border focus:border-blue-500 transition">
+                    <label class="block text-xs font-bold text-slate-400 mb-1">行程內容</label>
+                    <input id="activityInput" type="text" placeholder="要做什麼呢？" 
+                           class="w-full p-3 bg-slate-50 rounded-lg border outline-none focus:border-blue-500">
                 </div>
-                <button onclick="addTrip()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition active:scale-95">
-                    新增至行程
+
+                <button onclick="addTrip()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition active:scale-95 shadow-lg shadow-blue-200">
+                    加入行程表
                 </button>
             </div>
         </div>
 
-        <div id="tripContainer">
-            </div>
+        <div id="tripContainer"></div>
     </div>
 
     <script>
         const WEATHER_API_KEY = '在此處貼上你的_API_KEY'; 
         
+        // 儲存格式: [{id, date, time, city, lat, lon, activity, weather}]
         let trips = JSON.parse(localStorage.getItem('myTrips')) || [];
         let selectedLocation = null;
 
-        // 城市搜尋
+        // 城市搜尋 (Nominatim)
         let debounceTimer;
         function handleSearch() {
             const query = document.getElementById('cityInput').value;
@@ -63,17 +71,15 @@
             clearTimeout(debounceTimer);
             if (query.length < 2) { box.classList.add('hidden'); return; }
             debounceTimer = setTimeout(async () => {
-                try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=5`);
-                    const data = await res.json();
-                    box.innerHTML = data.map(item => `
-                        <div class="p-3 hover:bg-blue-50 cursor-pointer border-b border-slate-50"
-                             onclick="selectLocation('${item.display_name.split(',')[0]}', ${item.lat}, ${item.lon})">
-                            📍 ${item.display_name.split(',')[0]} <span class="text-xs text-gray-400">${item.display_name.split(',').slice(1,3)}</span>
-                        </div>
-                    `).join('');
-                    box.classList.remove('hidden');
-                } catch (e) { console.error(e); }
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=5`);
+                const data = await res.json();
+                box.innerHTML = data.map(item => `
+                    <div class="p-3 hover:bg-blue-50 cursor-pointer border-b border-slate-50"
+                         onclick="selectLocation('${item.display_name.split(',')[0]}', ${item.lat}, ${item.lon})">
+                        📍 ${item.display_name}
+                    </div>
+                `).join('');
+                box.classList.remove('hidden');
             }, 500);
         }
 
@@ -83,42 +89,39 @@
             selectedLocation = { name, lat, lon };
         }
 
-        // 獲取天氣
-        async function fetchWeather(lat, lon) {
-            try {
-                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric&lang=zh_tw`);
-                const data = await res.json();
-                if(data.cod !== 200) return "暫無天氣";
-                return `${Math.round(data.main.temp)}°C | ${data.weather[0].description}`;
-            } catch { return "讀取失敗"; }
-        }
-
         // 新增行程
         async function addTrip() {
             const date = document.getElementById('dateInput').value;
+            const time = document.getElementById('timeInput').value || "00:00";
             const activity = document.getElementById('activityInput').value;
+            
             if (!date || !activity) return alert("請輸入日期與活動內容");
 
-            // 如果該日期還沒有目的地資訊，則記錄目前的選擇
-            const existingDay = trips.find(t => t.date === date);
-            
+            // 取得天氣 (如果該日期還沒抓過天氣)
+            let weatherInfo = "";
+            if (selectedLocation) {
+                try {
+                    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${selectedLocation.lat}&lon=${selectedLocation.lon}&appid=${WEATHER_API_KEY}&units=metric&lang=zh_tw`);
+                    const data = await res.json();
+                    weatherInfo = data.cod === 200 ? `${Math.round(data.main.temp)}°C ${data.weather[0].description}` : "無天氣資料";
+                } catch { weatherInfo = "連線失敗"; }
+            }
+
             const newEntry = {
                 id: Date.now(),
                 date,
+                time,
                 activity,
-                city: selectedLocation ? selectedLocation.name : (existingDay ? existingDay.city : "未知地點"),
-                lat: selectedLocation ? selectedLocation.lat : (existingDay ? existingDay.lat : null),
-                lon: selectedLocation ? selectedLocation.lon : (existingDay ? existingDay.lon : null)
+                city: selectedLocation ? selectedLocation.name : "未知地點",
+                weather: weatherInfo
             };
-
-            // 如果該日期的天氣還沒抓過，且現在有經緯度，就去抓
-            if (newEntry.lat && !newEntry.weather) {
-                newEntry.weather = await fetchWeather(newEntry.lat, newEntry.lon);
-            }
 
             trips.push(newEntry);
             saveAndRender();
+            
+            // 清除輸入
             document.getElementById('activityInput').value = '';
+            document.getElementById('timeInput').value = '';
         }
 
         function deleteEntry(id) {
@@ -134,44 +137,47 @@
         function render() {
             const container = document.getElementById('tripContainer');
             if (trips.length === 0) {
-                container.innerHTML = '<p class="text-center text-slate-400 mt-10">尚無行程，開始規劃吧！</p>';
+                container.innerHTML = '<p class="text-center text-slate-400 mt-10 text-sm">尚未加入任何行程</p>';
                 return;
             }
 
-            // 1. 先按日期分組
-            const grouped = trips.reduce((acc, trip) => {
-                if (!acc[trip.date]) acc[trip.date] = [];
-                acc[trip.date].push(trip);
-                return acc;
-            }, {});
+            // --- 核心邏輯：依照日期分組 ---
+            const groups = {};
+            trips.forEach(t => {
+                if (!groups[t.date]) groups[t.date] = [];
+                groups[t.date].push(t);
+            });
 
-            // 2. 排序日期
-            const sortedDates = Object.keys(grouped).sort((a, b) => new Date(a) - new Date(b));
+            // 排序日期
+            const sortedDates = Object.keys(groups).sort((a, b) => new Date(a) - new Date(b));
 
-            // 3. 渲染 HTML
             container.innerHTML = sortedDates.map(date => {
-                const dayTrips = grouped[date];
-                const mainInfo = dayTrips.find(t => t.weather) || dayTrips[0];
+                const dayItems = groups[date];
+                // 排序當天時間
+                dayItems.sort((a, b) => a.time.localeCompare(b.time));
                 
+                // 抓取該日第一筆有天氣資料的地點作為標題
+                const headerInfo = dayItems.find(i => i.weather !== "") || dayItems[0];
+
                 return `
-                    <div class="day-page">
-                        <div class="day-header flex justify-between items-center">
+                    <div class="day-card">
+                        <div class="day-header flex justify-between items-end">
                             <div>
-                                <div class="text-xs opacity-80 font-bold uppercase">${date}</div>
-                                <div class="text-xl font-bold">${mainInfo.city}</div>
+                                <div class="text-[10px] font-bold opacity-70 tracking-widest uppercase mb-1">${date}</div>
+                                <div class="text-xl font-bold italic">DAY 行程</div>
                             </div>
-                            <div class="text-right text-white">
-                                <div class="text-xs opacity-80">今日預報</div>
-                                <div class="font-bold">${mainInfo.weather || '尚未更新'}</div>
+                            <div class="text-right">
+                                <div class="text-xs font-medium opacity-80 mb-1">${headerInfo.city}</div>
+                                <div class="text-sm font-bold bg-white/20 px-2 py-1 rounded-md inline-block">
+                                    ☁️ ${headerInfo.weather || '無天氣資料'}
+                                </div>
                             </div>
                         </div>
-                        <div class="p-4 space-y-3">
-                            ${dayTrips.map(item => `
-                                <div class="flex justify-between items-center group p-2 hover:bg-slate-50 rounded-lg transition">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
-                                        <span class="text-slate-700">${item.activity}</span>
-                                    </div>
+                        <div class="p-2">
+                            ${dayItems.map(item => `
+                                <div class="flex items-center gap-4 p-3 hover:bg-slate-50 rounded-xl group transition">
+                                    <div class="time-badge">${item.time}</div>
+                                    <div class="flex-1 text-slate-700 font-medium">${item.activity}</div>
                                     <button onclick="deleteEntry(${item.id})" class="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">✕</button>
                                 </div>
                             `).join('')}
