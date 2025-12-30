@@ -75,4 +75,166 @@
                     box.innerHTML = data.map(item => `<div onclick="selectLocation('${item.display_name.replace(/'/g, "\\'")}', ${item.lat}, ${item.lon})" class="p-4 hover:bg-blue-50 cursor-pointer border-b text-sm">📍 ${item.display_name}</div>`).join('');
                     box.classList.remove('hidden');
                 } catch (e) { console.error("搜尋服務異常"); }
-            },
+            }, 500);
+        }
+
+        function selectLocation(name, lat, lon) {
+            const shortName = name.split(',')[0];
+            document.getElementById('cityInput').value = shortName;
+            document.getElementById('cityInput').classList.add('selected-bg');
+            document.getElementById('selectionStatus').innerText = "✅ 地點已選取";
+            document.getElementById('suggestionBox').classList.add('hidden');
+            selectedLocation = { name: shortName, lat, lon };
+        }
+
+        async function addOrUpdateTrip() {
+            const date = document.getElementById('dateInput').value;
+            const time = document.getElementById('timeInput').value;
+            const activity = document.getElementById('activityInput').value;
+
+            if (!selectedLocation || !date || !time) return alert("請完整填寫地點、日期與時間！");
+
+            const btn = document.getElementById('addBtn');
+            btn.innerText = "儲存中...";
+            btn.disabled = true;
+
+            // 只有地點改變時才重新抓天氣，編輯模式若沒改地點則延用舊天氣
+            let weather = "無天氣資訊";
+            if (selectedLocation.lat !== 0) {
+                weather = await fetchWeather(selectedLocation.lat, selectedLocation.lon);
+            } else if (editingTripId) {
+                const oldTrip = trips.find(t => t.id === editingTripId);
+                weather = oldTrip.weather;
+            }
+
+            if (editingTripId) {
+                const index = trips.findIndex(t => t.id === editingTripId);
+                trips[index] = { ...trips[index], city: selectedLocation.name, date, time, activity, weather };
+            } else {
+                trips.push({ id: Date.now(), city: selectedLocation.name, date, time, activity, weather });
+            }
+
+            localStorage.setItem('myTrips', JSON.stringify(trips));
+            render();
+            resetForm();
+            btn.disabled = false;
+        }
+
+        async function fetchWeather(lat, lon) {
+            try {
+                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric&lang=zh_tw`);
+                const data = await res.json();
+                return data.cod === 200 ? `${Math.round(data.main.temp)}°C ${data.weather[0].description}` : "無天氣";
+            } catch { return "天氣離線"; }
+        }
+
+        function editTrip(id) {
+            const trip = trips.find(t => t.id === id);
+            if (!trip) return;
+
+            editingTripId = id;
+            document.getElementById('cityInput').value = trip.city;
+            document.getElementById('dateInput').value = trip.date;
+            document.getElementById('timeInput').value = trip.time;
+            document.getElementById('activityInput').value = trip.activity;
+            
+            // 標記為編輯狀態
+            selectedLocation = { name: trip.city, lat: 0, lon: 0 }; 
+            document.getElementById('inputForm').classList.add('edit-mode-border');
+            document.getElementById('cityInput').classList.add('selected-bg');
+            document.getElementById('addBtn').innerText = "儲存修改";
+            document.getElementById('addBtn').classList.replace('bg-blue-600', 'bg-red-500');
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            editingTripId = null;
+            document.getElementById('cityInput').value = "";
+            document.getElementById('dateInput').value = "";
+            document.getElementById('timeInput').value = "";
+            document.getElementById('activityInput').value = "";
+            document.getElementById('inputForm').classList.remove('edit-mode-border');
+            document.getElementById('cityInput').classList.remove('selected-bg');
+            document.getElementById('selectionStatus').innerText = "";
+            document.getElementById('addBtn').innerText = "添加行程";
+            document.getElementById('addBtn').classList.replace('bg-red-500', 'bg-blue-600');
+            document.getElementById('cancelEditBtn').classList.add('hidden');
+            selectedLocation = null;
+        }
+
+        function deleteTrip(id) {
+            if (confirm("確定刪除此行程嗎？")) {
+                trips = trips.filter(t => t.id !== id);
+                localStorage.setItem('myTrips', JSON.stringify(trips));
+                render();
+            }
+        }
+
+        function render() {
+            const list = document.getElementById('tripList');
+            trips.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+            
+            list.innerHTML = trips.map((t, index) => {
+                let transitBtn = "";
+                if (index < trips.length - 1) {
+                    const nextTrip = trips[index + 1];
+                    const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(t.city)}&destination=${encodeURIComponent(nextTrip.city)}&travelmode=transit`;
+                    transitBtn = `
+                        <div class="flex justify-center my-2">
+                            <a href="${mapsUrl}" target="_blank" class="text-[10px] bg-slate-200 text-slate-500 px-3 py-1 rounded-full font-bold hover:bg-blue-100 transition">🚌 查詢交通時間</a>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="bg-white p-5 rounded-[1.5rem] border-2 border-slate-100 shadow-sm relative group">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-[10px] font-black text-blue-500 uppercase">${t.date} · <span class="text-orange-500">${t.time}</span></span>
+                                <h3 class="font-bold text-slate-800 text-lg">${t.city}</h3>
+                            </div>
+                            <div class="bg-blue-50 px-2 py-1 rounded-lg text-[10px] font-bold text-blue-600">${t.weather}</div>
+                        </div>
+                        <p class="text-slate-500 text-sm mt-2 border-t pt-2 border-dashed border-slate-100 whitespace-pre-line">${t.activity || '無詳細行程'}</p>
+                        <div class="flex gap-4 mt-3 justify-end border-t pt-2 border-slate-50">
+                            <button onclick="editTrip(${t.id})" class="text-xs font-bold text-blue-400 hover:text-blue-600">✏️ 編輯行程</button>
+                            <button onclick="deleteTrip(${t.id})" class="text-xs font-bold text-slate-300 hover:text-red-500">🗑️ 刪除</button>
+                        </div>
+                    </div>
+                    ${transitBtn}
+                `;
+            }).join('');
+        }
+
+        function shareLink() {
+            if (trips.length === 0) return alert("請先加入行程！");
+            const dataStr = btoa(encodeURIComponent(JSON.stringify(trips)));
+            const shareUrl = `${window.location.origin}${window.location.pathname}?data=${dataStr}`;
+            navigator.clipboard.writeText(shareUrl).then(() => alert("分享連結已複製！"));
+        }
+
+        function clearAll() {
+            if (confirm("確定要清空所有行程嗎？")) {
+                trips = [];
+                localStorage.setItem('myTrips', JSON.stringify(trips));
+                render();
+            }
+        }
+
+        window.onload = () => {
+            const params = new URLSearchParams(window.location.search);
+            const sharedData = params.get('data');
+            if (sharedData) {
+                try {
+                    const decoded = JSON.parse(decodeURIComponent(atob(sharedData)));
+                    trips = decoded;
+                    localStorage.setItem('myTrips', JSON.stringify(trips));
+                } catch (e) {}
+            }
+            render();
+        };
+    </script>
+</body>
+</html>
