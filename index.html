@@ -3,186 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的旅遊日誌 ✈️</title>
+    <title>旅遊規劃師 - 除錯加強版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f1f5f9; }
-        .day-card { background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 2rem; overflow: hidden; border: 1px solid #e2e8f0; }
-        .day-header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 1.25rem; }
-        .time-badge { background: #eff6ff; color: #1e40af; font-weight: bold; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; border: 1px solid #dbeafe; min-width: 55px; text-align: center; }
+        #suggestionBox { z-index: 100; max-height: 200px; overflow-y: auto; }
+        .selected-bg { background-color: #dbeafe !important; border: 2px solid #2563eb !important; }
     </style>
 </head>
-<body class="pb-20">
+<body class="bg-slate-100 min-h-screen p-4 font-sans">
 
-    <div class="max-w-md mx-auto px-4 py-8">
-        <header class="mb-8 text-center">
-            <h1 class="text-3xl font-bold text-slate-800 tracking-tight">旅程計畫表 ✈️</h1>
-            <p class="text-slate-500 text-sm mt-1">同一天行程會自動合併</p>
-        </header>
+    <div class="max-w-md mx-auto bg-white rounded-3xl shadow-xl p-6 mt-4">
+        <h1 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">🌍 我的行程規劃</h1>
 
-        <div class="bg-white rounded-2xl shadow-sm p-6 mb-10 border border-slate-200">
-            <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-1">日期</label>
-                        <input id="dateInput" type="date" class="w-full p-2 bg-slate-50 rounded-lg border outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-1">時間</label>
-                        <input id="timeInput" type="time" class="w-full p-2 bg-slate-50 rounded-lg border outline-none focus:border-blue-500">
-                    </div>
-                </div>
-                
-                <div class="relative">
-                    <label class="block text-xs font-bold text-slate-400 mb-1">目的地</label>
-                    <input id="cityInput" type="text" oninput="handleSearch()" placeholder="輸入城市並從選單點選" 
-                           class="w-full p-2 bg-slate-50 rounded-lg border outline-none focus:border-blue-500">
-                    <div id="suggestionBox" class="absolute z-30 w-full mt-1 bg-white border rounded-lg shadow-xl hidden max-h-48 overflow-y-auto text-sm"></div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1">行程內容</label>
-                    <input id="activityInput" type="text" placeholder="要做什麼呢？" 
-                           class="w-full p-3 bg-slate-50 rounded-lg border outline-none focus:border-blue-500">
-                </div>
-
-                <button onclick="addTrip()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-lg">
-                    加入行程表
-                </button>
+        <div class="space-y-4 bg-slate-50 p-4 rounded-2xl mb-6">
+            <div class="relative">
+                <label class="block text-xs font-bold text-slate-500 mb-1">目的地 (輸入後請點擊選單)</label>
+                <input id="cityInput" type="text" oninput="handleSearch()" placeholder="輸入城市，如：Tokyo" 
+                    class="w-full p-3 border-2 border-transparent rounded-xl outline-none shadow-sm focus:border-blue-400 transition">
+                <div id="suggestionBox" class="absolute left-0 right-0 bg-white border rounded-xl mt-1 shadow-2xl hidden"></div>
+                <div id="selectionStatus" class="text-xs mt-1 text-blue-600 font-bold"></div>
             </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">日期</label>
+                <input id="dateInput" type="date" class="w-full p-3 border rounded-xl outline-none">
+            </div>
+
+            <button id="addBtn" onclick="addTrip()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition">
+                添加行程
+            </button>
         </div>
 
-        <div id="tripContainer"></div>
+        <div id="tripList" class="space-y-4"></div>
     </div>
 
     <script>
-        // --- 請確認這裡貼上了你的 API KEY ---
-        const WEATHER_API_KEY = '在此處貼上你的_API_KEY'; 
-        
+        const WEATHER_API_KEY = '2f6396d64af0f2086c95718c08352936';
         let trips = JSON.parse(localStorage.getItem('myTrips')) || [];
         let selectedLocation = null;
 
+        // 搜尋功能
         let debounceTimer;
-        function handleSearch() {
+        async function handleSearch() {
             const query = document.getElementById('cityInput').value;
             const box = document.getElementById('suggestionBox');
+            const status = document.getElementById('selectionStatus');
+            
+            // 重置選取狀態
+            selectedLocation = null;
+            status.innerText = "";
+            document.getElementById('cityInput').classList.remove('selected-bg');
+
             clearTimeout(debounceTimer);
             if (query.length < 2) { box.classList.add('hidden'); return; }
+
             debounceTimer = setTimeout(async () => {
                 try {
                     const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`);
                     const data = await res.json();
-                    box.innerHTML = data.map(item => {
-                        const name = item.display_name.split(',')[0].replace(/'/g, "\\'");
-                        return `<div class="p-3 hover:bg-blue-50 cursor-pointer border-b" onclick="selectLocation('${name}', ${item.lat}, ${item.lon})">📍 ${item.display_name}</div>`;
-                    }).join('');
-                    box.classList.remove('hidden');
-                } catch (e) { console.log(e); }
+                    if (data.length > 0) {
+                        box.innerHTML = data.map(item => `
+                            <div onclick="selectLocation('${item.display_name.replace(/'/g, "\\'")}', ${item.lat}, ${item.lon})" 
+                                class="p-3 hover:bg-blue-100 cursor-pointer border-b text-sm">
+                                📍 ${item.display_name}
+                            </div>
+                        `).join('');
+                        box.classList.remove('hidden');
+                    }
+                } catch (e) { console.error("搜尋服務異常"); }
             }, 500);
         }
 
+        // 點擊選單後的動作
         function selectLocation(name, lat, lon) {
-            document.getElementById('cityInput').value = name;
+            const shortName = name.split(',')[0];
+            const input = document.getElementById('cityInput');
+            const status = document.getElementById('selectionStatus');
+            
+            input.value = shortName;
+            input.classList.add('selected-bg'); // 變色提示已選取
+            status.innerText = "✅ 已選取：" + shortName;
+            
             document.getElementById('suggestionBox').classList.add('hidden');
-            selectedLocation = { name, lat, lon };
+            selectedLocation = { name: shortName, lat, lon };
+        }
+
+        async function fetchWeather(lat, lon) {
+            try {
+                const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric&lang=zh_tw`;
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.cod !== 200) return "API報錯:" + data.message;
+                return `${Math.round(data.main.temp)}°C ${data.weather[0].description}`;
+            } catch (err) {
+                return "連線失敗";
+            }
         }
 
         async function addTrip() {
-            const dateInput = document.getElementById('dateInput');
-            const timeInput = document.getElementById('timeInput');
-            const cityInput = document.getElementById('cityInput');
-            const activityInput = document.getElementById('activityInput');
+            const date = document.getElementById('dateInput').value;
+            const input = document.getElementById('cityInput');
 
-            if (!dateInput.value || !activityInput.value) {
-                alert("請至少填寫日期與行程內容！");
+            // 防呆：如果沒點選單，嘗試拿目前輸入的文字去搜
+            if (!selectedLocation) {
+                alert("請點擊下拉選單中的地點！");
                 return;
             }
 
-            let weatherInfo = "";
-            let cityToSave = selectedLocation ? selectedLocation.name : (cityInput.value || "未設定地點");
+            const btn = document.getElementById('addBtn');
+            btn.innerText = "讀取天氣中...";
+            btn.disabled = true;
 
-            // 抓取天氣
-            if (selectedLocation) {
-                try {
-                    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${selectedLocation.lat}&lon=${selectedLocation.lon}&appid=${WEATHER_API_KEY}&units=metric&lang=zh_tw`);
-                    const data = await res.json();
-                    if (data.cod === 200) {
-                        weatherInfo = `${Math.round(data.main.temp)}°C ${data.weather[0].description}`;
-                    }
-                } catch (e) { weatherInfo = "天氣讀取失敗"; }
-            }
-
-            const newEntry = {
-                id: Date.now(),
-                date: dateInput.value,
-                time: timeInput.value || "00:00",
-                activity: activityInput.value,
-                city: cityToSave,
-                weather: weatherInfo
-            };
-
-            trips.push(newEntry);
-            localStorage.setItem('myTrips', JSON.stringify(trips));
+            const weather = await fetchWeather(selectedLocation.lat, selectedLocation.lon);
             
-            // 重置輸入
-            activityInput.value = '';
-            timeInput.value = '';
-            selectedLocation = null;
-            render();
-        }
+            trips.push({
+                id: Date.now(),
+                city: selectedLocation.name,
+                date: date,
+                weather: weather
+            });
 
-        function deleteEntry(id) {
-            trips = trips.filter(t => t.id !== id);
             localStorage.setItem('myTrips', JSON.stringify(trips));
             render();
+            
+            // 重置
+            input.value = "";
+            input.classList.remove('selected-bg');
+            document.getElementById('selectionStatus').innerText = "";
+            btn.innerText = "添加行程";
+            btn.disabled = false;
+            selectedLocation = null;
         }
 
         function render() {
-            const container = document.getElementById('tripContainer');
-            if (trips.length === 0) {
-                container.innerHTML = '<p class="text-center text-slate-400 mt-10">尚無行程</p>';
-                return;
-            }
-
-            const groups = {};
-            trips.forEach(t => {
-                if (!groups[t.date]) groups[t.date] = [];
-                groups[t.date].push(t);
-            });
-
-            const sortedDates = Object.keys(groups).sort((a, b) => new Date(a) - new Date(b));
-
-            container.innerHTML = sortedDates.map(date => {
-                const dayItems = groups[date];
-                dayItems.sort((a, b) => a.time.localeCompare(b.time));
-                
-                const hasWeather = dayItems.find(i => i.weather !== "");
-                const displayCity = hasWeather ? hasWeather.city : dayItems[0].city;
-                const displayWeather = hasWeather ? hasWeather.weather : "無天氣資訊";
-
-                return `
-                    <div class="day-card">
-                        <div class="day-header flex justify-between items-center">
-                            <div>
-                                <div class="text-[10px] font-bold opacity-70 mb-1 uppercase">${date}</div>
-                                <div class="text-xl font-bold italic">${displayCity}</div>
-                            </div>
-                            <div class="bg-white/20 px-3 py-1 rounded-full text-sm font-bold">${displayWeather}</div>
-                        </div>
-                        <div class="p-2">
-                            ${dayItems.map(item => `
-                                <div class="flex items-center gap-4 p-3 hover:bg-slate-50 rounded-xl group border-b border-slate-50 last:border-none">
-                                    <div class="time-badge">${item.time}</div>
-                                    <div class="flex-1 text-slate-700 font-medium">${item.activity}</div>
-                                    <button onclick="deleteEntry(${item.id})" class="text-slate-300 hover:text-red-500">✕</button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>`;
-            }).join('');
+            const list = document.getElementById('tripList');
+            trips.sort((a, b) => new Date(a.date) - new Date(b.date));
+            list.innerHTML = trips.map(t => `
+                <div class="bg-white p-4 rounded-2xl border-2 border-slate-100 flex justify-between items-center">
+                    <div>
+                        <div class="text-xs text-blue-500 font-bold">${t.date}</div>
+                        <div class="font-bold text-slate-800">${t.city}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-bold text-orange-500">${t.weather}</div>
+                    </div>
+                </div>
+            `).join('');
         }
-
         render();
     </script>
 </body>
