@@ -1,69 +1,171 @@
-// --- 請在這裡填入你的 API KEY ---
-const WEATHER_API_KEY = '2f6396d64af0f2086c95718c08352936'; 
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的旅遊規劃師 ✈️</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 避免自動補全選單被遮擋 */
+        #suggestionBox { z-index: 50; max-height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4">
 
-let trips = JSON.parse(localStorage.getItem('myTrips')) || [];
-let selectedLocation = null;
+    <div class="max-w-md mx-auto bg-white rounded-3xl shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">📍 旅遊行程規劃</h1>
 
-// 1. 城市搜尋自動比對 (加入錯誤回報)
-let debounceTimer;
-async function handleSearch() {
-    const query = document.getElementById('cityInput').value;
-    const box = document.getElementById('suggestionBox');
-    
-    clearTimeout(debounceTimer);
-    if (query.length < 2) { box.classList.add('hidden'); return; }
+        <div class="space-y-4 mb-8">
+            <div class="relative">
+                <label class="block text-sm font-medium text-gray-700 mb-1">你想去哪裡？</label>
+                <input id="cityInput" type="text" oninput="handleSearch()" placeholder="輸入城市名稱 (例如: 東京)" 
+                    class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                <div id="suggestionBox" class="absolute left-0 right-0 bg-white border rounded-xl mt-1 shadow-xl hidden"></div>
+            </div>
 
-    debounceTimer = setTimeout(async () => {
-        try {
-            // 加入 User-Agent 是因為 Nominatim 有時會擋掉沒識別身份的請求
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`, {
-                headers: { 'User-Agent': 'MyTravelApp/1.0' }
-            });
-            const data = await res.json();
-            
-            if (data.length === 0) {
-                box.innerHTML = `<div class="p-3 text-sm text-gray-500">找不到這個地方，請試試其他名稱</div>`;
-            } else {
-                box.innerHTML = data.map(item => `
-                    <div class="suggestion-item p-3 hover:bg-blue-50 cursor-pointer border-b border-slate-100 text-sm text-slate-700"
-                         onclick="selectLocation('${item.display_name.replace(/'/g, "\\'")}', ${item.lat}, ${item.lon})">
-                        📍 ${item.display_name}
-                    </div>
-                `).join('');
-            }
-            box.classList.remove('hidden');
-        } catch (e) {
-            console.error("搜尋服務異常:", e);
-            box.innerHTML = `<div class="p-3 text-sm text-red-500">搜尋服務暫時不可用，請檢查網路</div>`;
-            box.classList.remove('hidden');
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">出發日期</label>
+                <input id="dateInput" type="date" class="w-full p-3 border rounded-xl outline-none">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">行程內容</label>
+                <textarea id="activityInput" placeholder="這天要做什麼呢？" class="w-full p-3 border rounded-xl h-24 outline-none"></textarea>
+            </div>
+
+            <button onclick="addTrip()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg">
+                ➕ 加入我的清單
+            </button>
+        </div>
+
+        <div id="tripList" class="space-y-4"></div>
+
+        <div class="mt-8 border-t pt-4 flex justify-between text-xs text-gray-400">
+            <button onclick="shareLink()" class="text-blue-500 hover:underline">🔗 複製分享連結</button>
+            <button onclick="clearAll()" class="hover:text-red-500">🗑️ 清除所有行程</button>
+        </div>
+    </div>
+
+    <script>
+        const WEATHER_API_KEY = '2f6396d64af0f2086c95718c08352936';
+        let trips = JSON.parse(localStorage.getItem('myTrips')) || [];
+        let selectedLocation = null;
+
+        // 1. 城市搜尋自動比對
+        let debounceTimer;
+        async function handleSearch() {
+            const query = document.getElementById('cityInput').value;
+            const box = document.getElementById('suggestionBox');
+            clearTimeout(debounceTimer);
+            if (query.length < 2) { box.classList.add('hidden'); return; }
+
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`);
+                    const data = await res.json();
+                    if (data.length === 0) {
+                        box.innerHTML = `<div class="p-3 text-gray-400">找不到這個地方</div>`;
+                    } else {
+                        box.innerHTML = data.map(item => `
+                            <div onclick="selectLocation('${item.display_name}', ${item.lat}, ${item.lon})" 
+                                class="p-3 hover:bg-blue-50 cursor-pointer border-b last:border-0 text-sm">
+                                📍 ${item.display_name}
+                            </div>
+                        `).join('');
+                    }
+                    box.classList.remove('hidden');
+                } catch (e) {
+                    box.classList.add('hidden');
+                }
+            }, 500);
         }
-    }, 500);
-}
 
-function selectLocation(name, lat, lon) {
-    // 取得第一個逗號前的名稱（較簡短）
-    const shortName = name.split(',')[0];
-    document.getElementById('cityInput').value = shortName;
-    document.getElementById('suggestionBox').classList.add('hidden');
-    selectedLocation = { name: shortName, lat, lon };
-    console.log("已選擇地點:", selectedLocation);
-}
+        function selectLocation(name, lat, lon) {
+            const shortName = name.split(',')[0];
+            document.getElementById('cityInput').value = shortName;
+            document.getElementById('suggestionBox').classList.add('hidden');
+            selectedLocation = { name: shortName, lat, lon };
+        }
 
-// 2. 獲取天氣資料 (加入詳細代碼檢查)
-async function fetchWeather(lat, lon) {
-    if (!WEATHER_API_KEY || WEATHER_API_KEY.includes('在此處')) {
-        return "⚠️ 未設定 API Key";
-    }
-    try {
-        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric&lang=zh_tw`);
-        const data = await res.json();
-        
-        if (data.cod === 401) return "❌ API Key 尚未生效 (需等2小時)";
-        if (data.cod !== 200) return "❌ 天氣讀取錯誤";
-        
-        return `${Math.round(data.main.temp)}°C ${data.weather[0].description}`;
-    } catch {
-        return "🌐 網路連線失敗";
-    }
-}
-// ... 後續的 addTrip, render 等功能保持不變
+        // 2. 獲取天氣資料
+        async function fetchWeather(lat, lon) {
+            try {
+                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric&lang=zh_tw`);
+                const data = await res.json();
+                if (data.cod !== 200) return "無法獲取天氣";
+                return `${Math.round(data.main.temp)}°C ${data.weather[0].description}`;
+            } catch {
+                return "天氣服務離線";
+            }
+        }
+
+        // 3. 新增行程
+        async function addTrip() {
+            const date = document.getElementById('dateInput').value;
+            const activity = document.getElementById('activityInput').value;
+
+            if (!selectedLocation || !date) return alert("請選擇地點與日期！");
+
+            const weather = await fetchWeather(selectedLocation.lat, selectedLocation.lon);
+            const newTrip = { id: Date.now(), city: selectedLocation.name, date, activity, weather };
+            
+            trips.push(newTrip);
+            saveAndRender();
+            
+            // 重置輸入
+            document.getElementById('cityInput').value = '';
+            document.getElementById('activityInput').value = '';
+            selectedLocation = null;
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('myTrips', JSON.stringify(trips));
+            render();
+        }
+
+        function render() {
+            const list = document.getElementById('tripList');
+            trips.sort((a, b) => new Date(a.date) - new Date(b.date));
+            list.innerHTML = trips.map(t => `
+                <div class="bg-blue-50 rounded-2xl p-4 border border-blue-100">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <p class="text-xs font-bold text-blue-400">${t.date}</p>
+                            <h3 class="font-bold text-gray-800">${t.city}</h3>
+                        </div>
+                        <span class="text-sm bg-white px-2 py-1 rounded-lg shadow-sm text-blue-600 font-medium">☀️ ${t.weather}</span>
+                    </div>
+                    <p class="text-gray-600 text-sm">${t.activity}</p>
+                </div>
+            `).join('');
+        }
+
+        function shareLink() {
+            const dataStr = btoa(encodeURIComponent(JSON.stringify(trips)));
+            const shareUrl = `${window.location.origin}${window.location.pathname}?data=${dataStr}`;
+            navigator.clipboard.writeText(shareUrl).then(() => alert("分享連結已複製！"));
+        }
+
+        function clearAll() {
+            if (confirm("確定要刪除所有行程嗎？")) {
+                trips = [];
+                saveAndRender();
+            }
+        }
+
+        // 檢查分享
+        window.onload = () => {
+            const params = new URLSearchParams(window.location.search);
+            const sharedData = params.get('data');
+            if (sharedData) {
+                try {
+                    trips = JSON.parse(decodeURIComponent(atob(sharedData)));
+                    saveAndRender();
+                } catch (e) {}
+            } else {
+                render();
+            }
+        };
+    </script>
+</body>
+</html>
