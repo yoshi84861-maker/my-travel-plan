@@ -1,240 +1,1020 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>旅遊規劃師 - 編輯加強版 ✈️</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        #suggestionBox { z-index: 100; max-height: 200px; overflow-y: auto; }
-        .selected-bg { background-color: #dbeafe !important; border: 2px solid #2563eb !important; }
-        .edit-mode-border { border: 2px solid #ef4444 !important; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>菇點紀錄</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Microsoft JhengHei",
+        sans-serif;
+
+    background: #f4f6f8;
+    color: #333;
+}
+
+.container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 25px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+
+/* 新增區域 */
+
+.form-box {
+
+    background: white;
+
+    padding: 20px;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 3px 10px rgba(0,0,0,0.08);
+
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        1fr
+        1fr
+        1fr;
+
+    gap: 12px;
+
+    margin-bottom: 20px;
+
+}
+
+input,
+select,
+button {
+
+    padding: 12px;
+
+    border-radius: 8px;
+
+    border: 1px solid #ccc;
+
+    font-size: 15px;
+
+}
+
+button {
+
+    cursor: pointer;
+
+    border: none;
+
+}
+
+
+/* 新增按鈕 */
+
+.add-btn {
+
+    background: #4CAF50;
+
+    color: white;
+
+}
+
+.add-btn:hover {
+
+    background: #3d9141;
+
+}
+
+
+/* 篩選區 */
+
+.filter-box {
+
+    display: flex;
+
+    gap: 10px;
+
+    align-items: center;
+
+    margin-bottom: 15px;
+
+}
+
+
+/* 表格 */
+
+.table-box {
+
+    background: white;
+
+    border-radius: 12px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 3px 10px rgba(0,0,0,0.08);
+
+}
+
+table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+}
+
+th {
+
+    background: #333;
+
+    color: white;
+
+}
+
+th,
+td {
+
+    padding: 14px;
+
+    text-align: center;
+
+    border-bottom:
+        1px solid #eee;
+
+}
+
+tr:hover {
+
+    background: #fafafa;
+
+}
+
+
+/* 按鈕 */
+
+.edit-btn {
+
+    background: #2196F3;
+
+    color: white;
+
+    margin-right: 5px;
+
+}
+
+.delete-btn {
+
+    background: #f44336;
+
+    color: white;
+
+}
+
+.edit-btn:hover {
+
+    background: #1976D2;
+
+}
+
+.delete-btn:hover {
+
+    background: #d32f2f;
+
+}
+
+
+/* 手機 */
+
+@media (max-width: 700px) {
+
+    .form-box {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    table {
+
+        font-size: 13px;
+
+    }
+
+    th,
+    td {
+
+        padding: 8px;
+
+    }
+
+}
+
+</style>
+
 </head>
-<body class="bg-slate-50 min-h-screen p-4 font-sans text-slate-900">
 
-    <div class="max-w-md mx-auto bg-white rounded-[2rem] shadow-2xl p-6 mt-4 border border-slate-100">
-        <h1 class="text-2xl font-black text-slate-800 mb-6 flex items-center gap-2">📍 我的行程清單</h1>
 
-        <div id="inputForm" class="space-y-4 bg-slate-50 p-5 rounded-3xl mb-8 border border-slate-200">
-            <div class="relative">
-                <label class="block text-xs font-black text-slate-400 uppercase mb-1">目的地</label>
-                <input id="cityInput" type="text" oninput="handleSearch()" placeholder="搜尋城市並點擊..." 
-                    class="w-full p-4 bg-white border-0 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-blue-400 transition">
-                <div id="suggestionBox" class="absolute left-0 right-0 bg-white border rounded-xl mt-2 shadow-2xl hidden"></div>
-                <div id="selectionStatus" class="text-xs mt-1 text-blue-600 font-bold px-1"></div>
-            </div>
+<body>
 
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-black text-slate-400 uppercase mb-1">日期</label>
-                    <input id="dateInput" type="date" class="w-full p-4 bg-white border-0 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-blue-400">
-                </div>
-                <div>
-                    <label class="block text-xs font-black text-slate-400 uppercase mb-1">時間</label>
-                    <input id="timeInput" type="time" class="w-full p-4 bg-white border-0 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-blue-400">
-                </div>
-            </div>
+<div class="container">
 
-            <div>
-                <label class="block text-xs font-black text-slate-400 uppercase mb-1">行程詳細內容</label>
-                <textarea id="activityInput" placeholder="想去哪裡玩？" class="w-full p-4 bg-white border-0 rounded-2xl shadow-sm h-24 outline-none focus:ring-2 focus:ring-blue-400 resize-none"></textarea>
-            </div>
+<h1>🍄 菇點紀錄</h1>
 
-            <button id="addBtn" onclick="addOrUpdateTrip()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 active:scale-95 transition shadow-lg">
-                添加行程
-            </button>
-            <button id="cancelEditBtn" onclick="resetForm()" class="w-full text-slate-400 py-2 text-sm hidden font-bold">取消編輯</button>
-        </div>
 
-        <div id="tripList" class="space-y-4"></div>
-        
-        <div class="mt-10 pt-6 border-t border-slate-100 flex justify-between items-center">
-            <button onclick="shareLink()" class="text-sm font-bold text-blue-500 hover:underline">🔗 複製分享連結</button>
-            <button onclick="clearAll()" class="text-xs text-slate-300 hover:text-red-500">清除所有行程</button>
-        </div>
-    </div>
+<!-- 新增紀錄 -->
 
-    <script>
-        const WEATHER_API_KEY = '2f6396d64af0f2086c95718c08352936';
-        let trips = JSON.parse(localStorage.getItem('myTrips')) || [];
-        let selectedLocation = null;
-        let editingTripId = null;
+<div class="form-box">
 
-        let debounceTimer;
-        async function handleSearch() {
-            const query = document.getElementById('cityInput').value;
-            const box = document.getElementById('suggestionBox');
-            selectedLocation = null;
-            clearTimeout(debounceTimer);
-            if (query.length < 2) { box.classList.add('hidden'); return; }
-            debounceTimer = setTimeout(async () => {
-                try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`);
-                    const data = await res.json();
-                    box.innerHTML = data.map(item => `<div onclick="selectLocation('${item.display_name.replace(/'/g, "\\'")}', ${item.lat}, ${item.lon})" class="p-4 hover:bg-blue-50 cursor-pointer border-b text-sm">📍 ${item.display_name}</div>`).join('');
-                    box.classList.remove('hidden');
-                } catch (e) { console.error("搜尋服務異常"); }
-            }, 500);
-        }
+<input
+id="coordinate"
+placeholder="座標，例如 123,456"
+/>
 
-        function selectLocation(name, lat, lon) {
-            const shortName = name.split(',')[0];
-            document.getElementById('cityInput').value = shortName;
-            document.getElementById('cityInput').classList.add('selected-bg');
-            document.getElementById('selectionStatus').innerText = "✅ 地點已選取";
-            document.getElementById('suggestionBox').classList.add('hidden');
-            selectedLocation = { name: shortName, lat, lon };
-        }
 
-        async function addOrUpdateTrip() {
-            const date = document.getElementById('dateInput').value;
-            const time = document.getElementById('timeInput').value;
-            const activity = document.getElementById('activityInput').value;
+<select id="type">
 
-            if (!selectedLocation || !date || !time) return alert("請完整填寫地點、日期與時間！");
+<option value="">選擇菇點類型</option>
 
-            const btn = document.getElementById('addBtn');
-            btn.innerText = "儲存中...";
-            btn.disabled = true;
+<option>毒</option>
+<option>電</option>
+<option>水</option>
+<option>水晶</option>
+<option>火</option>
+<option>巨大活動</option>
+<option>一般活動免費</option>
+<option>大毒</option>
+<option>大電</option>
+<option>大水晶</option>
+<option>大火</option>
 
-            // 只有地點改變時才重新抓天氣，編輯模式若沒改地點則延用舊天氣
-            let weather = "無天氣資訊";
-            if (selectedLocation.lat !== 0) {
-                weather = await fetchWeather(selectedLocation.lat, selectedLocation.lon);
-            } else if (editingTripId) {
-                const oldTrip = trips.find(t => t.id === editingTripId);
-                weather = oldTrip.weather;
-            }
+</select>
 
-            if (editingTripId) {
-                const index = trips.findIndex(t => t.id === editingTripId);
-                trips[index] = { ...trips[index], city: selectedLocation.name, date, time, activity, weather };
-            } else {
-                trips.push({ id: Date.now(), city: selectedLocation.name, date, time, activity, weather });
-            }
 
-            localStorage.setItem('myTrips', JSON.stringify(trips));
-            render();
-            resetForm();
-            btn.disabled = false;
-        }
+<select id="people">
 
-        async function fetchWeather(lat, lon) {
-            try {
-                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric&lang=zh_tw`);
-                const data = await res.json();
-                return data.cod === 200 ? `${Math.round(data.main.temp)}°C ${data.weather[0].description}` : "無天氣";
-            } catch { return "天氣離線"; }
-        }
+<option value="">剩餘人數</option>
 
-        function editTrip(id) {
-            const trip = trips.find(t => t.id === id);
-            if (!trip) return;
+<option>5</option>
+<option>4</option>
+<option>3</option>
+<option>2</option>
+<option>1</option>
 
-            editingTripId = id;
-            document.getElementById('cityInput').value = trip.city;
-            document.getElementById('dateInput').value = trip.date;
-            document.getElementById('timeInput').value = trip.time;
-            document.getElementById('activityInput').value = trip.activity;
-            
-            // 標記為編輯狀態
-            selectedLocation = { name: trip.city, lat: 0, lon: 0 }; 
-            document.getElementById('inputForm').classList.add('edit-mode-border');
-            document.getElementById('cityInput').classList.add('selected-bg');
-            document.getElementById('addBtn').innerText = "儲存修改";
-            document.getElementById('addBtn').classList.replace('bg-blue-600', 'bg-red-500');
-            document.getElementById('cancelEditBtn').classList.remove('hidden');
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+</select>
 
-        function resetForm() {
-            editingTripId = null;
-            document.getElementById('cityInput').value = "";
-            document.getElementById('dateInput').value = "";
-            document.getElementById('timeInput').value = "";
-            document.getElementById('activityInput').value = "";
-            document.getElementById('inputForm').classList.remove('edit-mode-border');
-            document.getElementById('cityInput').classList.remove('selected-bg');
-            document.getElementById('selectionStatus').innerText = "";
-            document.getElementById('addBtn').innerText = "添加行程";
-            document.getElementById('addBtn').classList.replace('bg-red-500', 'bg-blue-600');
-            document.getElementById('cancelEditBtn').classList.add('hidden');
-            selectedLocation = null;
-        }
 
-        function deleteTrip(id) {
-            if (confirm("確定刪除此行程嗎？")) {
-                trips = trips.filter(t => t.id !== id);
-                localStorage.setItem('myTrips', JSON.stringify(trips));
-                render();
-            }
-        }
+<input
+type="datetime-local"
+id="time"
+/>
 
-        function render() {
-            const list = document.getElementById('tripList');
-            trips.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
-            
-            list.innerHTML = trips.map((t, index) => {
-                let transitBtn = "";
-                if (index < trips.length - 1) {
-                    const nextTrip = trips[index + 1];
-                    const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(t.city)}&destination=${encodeURIComponent(nextTrip.city)}&travelmode=transit`;
-                    transitBtn = `
-                        <div class="flex justify-center my-2">
-                            <a href="${mapsUrl}" target="_blank" class="text-[10px] bg-slate-200 text-slate-500 px-3 py-1 rounded-full font-bold hover:bg-blue-100 transition">🚌 查詢交通時間</a>
-                        </div>
-                    `;
-                }
 
-                return `
-                    <div class="bg-white p-5 rounded-[1.5rem] border-2 border-slate-100 shadow-sm relative group">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <span class="text-[10px] font-black text-blue-500 uppercase">${t.date} · <span class="text-orange-500">${t.time}</span></span>
-                                <h3 class="font-bold text-slate-800 text-lg">${t.city}</h3>
-                            </div>
-                            <div class="bg-blue-50 px-2 py-1 rounded-lg text-[10px] font-bold text-blue-600">${t.weather}</div>
-                        </div>
-                        <p class="text-slate-500 text-sm mt-2 border-t pt-2 border-dashed border-slate-100 whitespace-pre-line">${t.activity || '無詳細行程'}</p>
-                        <div class="flex gap-4 mt-3 justify-end border-t pt-2 border-slate-50">
-                            <button onclick="editTrip(${t.id})" class="text-xs font-bold text-blue-400 hover:text-blue-600">✏️ 編輯行程</button>
-                            <button onclick="deleteTrip(${t.id})" class="text-xs font-bold text-slate-300 hover:text-red-500">🗑️ 刪除</button>
-                        </div>
-                    </div>
-                    ${transitBtn}
-                `;
-            }).join('');
-        }
+<button
+class="add-btn"
+onclick="addRecord()">
 
-        function shareLink() {
-            if (trips.length === 0) return alert("請先加入行程！");
-            const dataStr = btoa(encodeURIComponent(JSON.stringify(trips)));
-            const shareUrl = `${window.location.origin}${window.location.pathname}?data=${dataStr}`;
-            navigator.clipboard.writeText(shareUrl).then(() => alert("分享連結已複製！"));
-        }
+➕ 新增紀錄
 
-        function clearAll() {
-            if (confirm("確定要清空所有行程嗎？")) {
-                trips = [];
-                localStorage.setItem('myTrips', JSON.stringify(trips));
-                render();
-            }
-        }
+</button>
 
-        window.onload = () => {
-            const params = new URLSearchParams(window.location.search);
-            const sharedData = params.get('data');
-            if (sharedData) {
-                try {
-                    const decoded = JSON.parse(decodeURIComponent(atob(sharedData)));
-                    trips = decoded;
-                    localStorage.setItem('myTrips', JSON.stringify(trips));
-                } catch (e) {}
-            }
-            render();
-        };
-    </script>
+</div>
+
+
+
+<!-- 篩選 -->
+
+<div class="filter-box">
+
+<label>
+
+📊 菇點類型：
+
+</label>
+
+
+<select
+id="filterType"
+onchange="renderRecords()">
+
+<option value="全部">
+
+全部
+
+</option>
+
+<option>毒</option>
+<option>電</option>
+<option>水</option>
+<option>水晶</option>
+<option>火</option>
+<option>巨大活動</option>
+<option>一般活動免費</option>
+<option>大毒</option>
+<option>大電</option>
+<option>大水晶</option>
+<option>大火</option>
+
+</select>
+
+</div>
+
+
+
+<!-- 表格 -->
+
+<div class="table-box">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>坐標</th>
+
+<th>菇點類型</th>
+
+<th>剩餘人數</th>
+
+<th>時間</th>
+
+<th>操作</th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="recordList">
+
+</tbody>
+
+</table>
+
+</div>
+
+
+</div>
+
+
+
+<!-- Firebase -->
+
+<script type="module">
+
+
+import {
+initializeApp
+}
+
+from
+
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+
+import {
+
+getFirestore,
+
+collection,
+
+addDoc,
+
+deleteDoc,
+
+doc,
+
+updateDoc,
+
+onSnapshot,
+
+query,
+
+orderBy
+
+}
+
+from
+
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+
+/* =========================
+
+Firebase 設定
+
+請替換成你的 Firebase 資料
+
+========================= */
+
+
+const firebaseConfig = {
+
+apiKey:
+"你的API_KEY",
+
+authDomain:
+"你的PROJECT.firebaseapp.com",
+
+projectId:
+"你的PROJECT_ID",
+
+storageBucket:
+"你的PROJECT.appspot.com",
+
+messagingSenderId:
+"你的ID",
+
+appId:
+"你的APP_ID"
+
+};
+
+
+
+const app =
+initializeApp(firebaseConfig);
+
+
+const db =
+getFirestore(app);
+
+
+
+/* =========================
+
+資料
+
+========================= */
+
+
+let records = [];
+
+let editingId = null;
+
+
+
+const recordCollection =
+collection(db, "mushroomRecords");
+
+
+
+/* =========================
+
+即時同步資料
+
+========================= */
+
+
+const q =
+query(
+recordCollection,
+orderBy("createdAt", "desc")
+);
+
+
+
+onSnapshot(q, (snapshot) => {
+
+
+records = [];
+
+
+snapshot.forEach((document) => {
+
+
+records.push({
+
+id: document.id,
+
+...document.data()
+
+});
+
+
+});
+
+
+renderRecords();
+
+
+});
+
+
+
+/* =========================
+
+新增
+
+========================= */
+
+
+window.addRecord =
+async function() {
+
+
+const coordinate =
+document
+.getElementById("coordinate")
+.value
+.trim();
+
+
+const type =
+document
+.getElementById("type")
+.value;
+
+
+const people =
+document
+.getElementById("people")
+.value;
+
+
+const time =
+document
+.getElementById("time")
+.value;
+
+
+
+if (!coordinate) {
+
+alert("請輸入座標");
+
+return;
+
+}
+
+
+if (!type) {
+
+alert("請選擇菇點類型");
+
+return;
+
+}
+
+
+if (!people) {
+
+alert("請選擇剩餘人數");
+
+return;
+
+}
+
+
+if (!time) {
+
+alert("請選擇時間");
+
+return;
+
+}
+
+
+
+/* 修改模式 */
+
+
+if (editingId) {
+
+
+await updateDoc(
+
+doc(
+db,
+"mushroomRecords",
+editingId
+),
+
+{
+
+coordinate,
+
+type,
+
+people,
+
+time
+
+}
+
+);
+
+
+
+editingId = null;
+
+
+document
+.querySelector(".add-btn")
+.innerText =
+"➕ 新增紀錄";
+
+
+}
+
+
+/* 新增模式 */
+
+
+else {
+
+
+await addDoc(
+
+recordCollection,
+
+{
+
+coordinate,
+
+type,
+
+people,
+
+time,
+
+createdAt:
+Date.now()
+
+}
+
+);
+
+
+}
+
+
+
+/* 清空 */
+
+
+document
+.getElementById("coordinate")
+.value =
+"";
+
+
+document
+.getElementById("type")
+.value =
+"";
+
+
+document
+.getElementById("people")
+.value =
+"";
+
+
+document
+.getElementById("time")
+.value =
+"";
+
+
+};
+
+
+
+/* =========================
+
+顯示資料
+
+========================= */
+
+
+window.renderRecords =
+function() {
+
+
+const filter =
+document
+.getElementById("filterType")
+.value;
+
+
+const list =
+document
+.getElementById("recordList");
+
+
+list.innerHTML =
+"";
+
+
+
+let filteredRecords =
+records;
+
+
+
+if (filter !== "全部") {
+
+
+filteredRecords =
+records.filter(
+
+
+record =>
+
+record.type === filter
+
+
+);
+
+
+}
+
+
+
+/* 建立表格 */
+
+
+filteredRecords.forEach(
+
+
+record => {
+
+
+const row =
+document.createElement("tr");
+
+
+
+row.innerHTML = `
+
+
+<td>
+
+${record.coordinate}
+
+</td>
+
+
+<td>
+
+${record.type}
+
+</td>
+
+
+<td>
+
+${record.people}
+
+</td>
+
+
+<td>
+
+${formatTime(record.time)}
+
+</td>
+
+
+<td>
+
+
+<button
+
+class="edit-btn"
+
+onclick="editRecord('${record.id}')"
+
+>
+
+✏️ 修改
+
+</button>
+
+
+
+<button
+
+class="delete-btn"
+
+onclick="deleteRecord('${record.id}')"
+
+>
+
+🗑️ 刪除
+
+</button>
+
+
+</td>
+
+
+`;
+
+
+
+list.appendChild(row);
+
+
+}
+
+
+);
+
+
+};
+
+
+
+/* =========================
+
+時間格式
+
+========================= */
+
+
+function formatTime(time) {
+
+
+if (!time) {
+
+return "";
+
+}
+
+
+const date =
+new Date(time);
+
+
+
+return date.toLocaleString(
+
+"zh-TW",
+
+{
+
+year: "numeric",
+
+month: "2-digit",
+
+day: "2-digit",
+
+hour: "2-digit",
+
+minute: "2-digit"
+
+}
+
+);
+
+
+}
+
+
+
+/* =========================
+
+修改
+
+========================= */
+
+
+window.editRecord =
+function(id) {
+
+
+const record =
+records.find(
+
+
+r => r.id === id
+
+
+);
+
+
+
+if (!record) return;
+
+
+
+document
+.getElementById("coordinate")
+.value =
+record.coordinate;
+
+
+document
+.getElementById("type")
+.value =
+record.type;
+
+
+document
+.getElementById("people")
+.value =
+record.people;
+
+
+document
+.getElementById("time")
+.value =
+record.time;
+
+
+
+editingId =
+id;
+
+
+
+document
+.querySelector(".add-btn")
+.innerText =
+"💾 儲存修改";
+
+
+
+window.scrollTo({
+
+top: 0,
+
+behavior: "smooth"
+
+});
+
+
+};
+
+
+
+/* =========================
+
+刪除
+
+========================= */
+
+
+window.deleteRecord =
+async function(id) {
+
+
+const confirmDelete =
+confirm(
+
+"確定要刪除這筆紀錄嗎？"
+
+);
+
+
+
+if (!confirmDelete) {
+
+return;
+
+}
+
+
+
+await deleteDoc(
+
+doc(
+db,
+"mushroomRecords",
+id
+)
+
+);
+
+
+};
+
+
+
+</script>
+
+
 </body>
+
 </html>
