@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>菇點紀錄</title>
+  <title>🍄 菇點紀錄</title>
 
   <style>
     * {
@@ -21,7 +21,7 @@
     }
 
     .container {
-      max-width: 1200px;
+      max-width: 1300px;
       margin: auto;
     }
 
@@ -39,7 +39,7 @@
 
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 12px;
     }
 
@@ -82,7 +82,7 @@
       background: #dc3545;
     }
 
-    .btn-map {
+    .btn-copy {
       background: #6f42c1;
     }
 
@@ -107,7 +107,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 950px;
+      min-width: 1050px;
     }
 
     th,
@@ -125,6 +125,7 @@
     .coordinate {
       font-family: monospace;
       font-size: 14px;
+      word-break: break-all;
     }
 
     .countdown {
@@ -144,6 +145,7 @@
     .actions {
       display: flex;
       gap: 6px;
+      justify-content: center;
     }
 
     .actions button {
@@ -176,6 +178,7 @@
         padding: 15px;
       }
     }
+
   </style>
 </head>
 
@@ -185,13 +188,17 @@
 
   <h1>🍄 菇點紀錄</h1>
 
+
   <!-- 新增 / 修改 -->
+
   <div class="card">
 
     <div class="form-grid">
 
+
       <div>
         <label>📍 座標</label>
+
         <input
           type="text"
           id="coordinate"
@@ -199,8 +206,21 @@
         >
       </div>
 
+
+      <div>
+        <label>📌 地點（非必填）</label>
+
+        <input
+          type="text"
+          id="location"
+          placeholder="例如：Sofia"
+        >
+      </div>
+
+
       <div>
         <label>🍄 菇點類型</label>
+
         <select id="type">
           <option value="毒">毒</option>
           <option value="電">電</option>
@@ -216,8 +236,10 @@
         </select>
       </div>
 
+
       <div>
         <label>👥 剩餘人數</label>
+
         <select id="people">
           <option value="5">5</option>
           <option value="4">4</option>
@@ -227,8 +249,10 @@
         </select>
       </div>
 
+
       <div>
         <label>🕐 當地時間</label>
+
         <input
           type="text"
           id="localTime"
@@ -237,8 +261,10 @@
         >
       </div>
 
+
       <div>
-        <label>⏳ 剩餘時間</label>
+        <label>⏳ 剩餘時間（非必填）</label>
+
         <input
           type="text"
           id="remainingTime"
@@ -246,12 +272,20 @@
         >
       </div>
 
+
     </div>
 
+
     <div class="button-row">
-      <button class="btn-add" id="saveBtn" onclick="saveRecord()">
+
+      <button
+        class="btn-add"
+        id="saveBtn"
+        onclick="saveRecord()"
+      >
         ➕ 新增紀錄
       </button>
+
 
       <button
         class="btn-cancel"
@@ -261,14 +295,21 @@
       >
         取消修改
       </button>
+
     </div>
 
-    <div class="status" id="status"></div>
+
+    <div
+      class="status"
+      id="status"
+    ></div>
 
   </div>
 
 
+
   <!-- 篩選 -->
+
   <div class="card">
 
     <label>📊 依菇點類型篩選</label>
@@ -278,24 +319,33 @@
       class="filter"
       onchange="renderRecords()"
     >
+
       <option value="全部">全部</option>
+
       <option value="毒">毒</option>
       <option value="電">電</option>
       <option value="水">水</option>
       <option value="水晶">水晶</option>
       <option value="火">火</option>
+
       <option value="巨大活動">巨大活動</option>
-      <option value="一般活動免費">一般活動免費</option>
+      <option value="一般活動免費">
+        一般活動免費
+      </option>
+
       <option value="大毒">大毒</option>
       <option value="大電">大電</option>
       <option value="大水晶">大水晶</option>
       <option value="大火">大火</option>
+
     </select>
 
   </div>
 
 
-  <!-- 紀錄 -->
+
+  <!-- 紀錄表格 -->
+
   <div class="card">
 
     <div class="table-wrapper">
@@ -303,18 +353,29 @@
       <table>
 
         <thead>
+
           <tr>
+
             <th>座標</th>
+
+            <th>地點</th>
+
             <th>菇點類型</th>
+
             <th>剩餘人數</th>
+
             <th>當地時間</th>
+
             <th>剩餘時間</th>
+
             <th>操作</th>
+
           </tr>
+
         </thead>
 
-        <tbody id="recordList">
-        </tbody>
+
+        <tbody id="recordList"></tbody>
 
       </table>
 
@@ -325,30 +386,51 @@
 </div>
 
 
+
 <script type="module">
+
 
   import {
     initializeApp
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  }
+  from
+  "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
 
   import {
+
     getFirestore,
+
     collection,
+
     addDoc,
+
     deleteDoc,
+
     updateDoc,
+
     doc,
+
     onSnapshot,
+
     query,
+
     orderBy,
+
     serverTimestamp,
+
     Timestamp
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  }
+  from
+  "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 
 
   // ==========================================================
   // Firebase 設定
   // ==========================================================
+
 
   const firebaseConfig = {
 
@@ -360,855 +442,1835 @@
 
     storageBucket: "你的_PROJECT_ID.appspot.com",
 
-    messagingSenderId: "你的_MESSAGING_SENDER_ID",
+    messagingSenderId:
+      "你的_MESSAGING_SENDER_ID",
 
     appId: "你的_APP_ID"
 
   };
 
 
-  const app = initializeApp(firebaseConfig);
 
-  const db = getFirestore(app);
+  const app =
+    initializeApp(firebaseConfig);
 
-  const recordsRef = collection(db, "mushroomRecords");
+
+
+  const db =
+    getFirestore(app);
+
+
+
+  const recordsRef =
+    collection(
+      db,
+      "mushroomRecords"
+    );
+
 
 
   // ==========================================================
   // 全域變數
   // ==========================================================
 
+
   let records = [];
 
+
   let editingId = null;
+
 
 
   // ==========================================================
   // 座標解析
   // ==========================================================
 
+
   function parseCoordinate(text) {
 
-    const parts = text
-      .split(",")
-      .map(x => x.trim());
 
-    if (parts.length !== 2) {
-      return null;
-    }
+    const parts =
+      text
+        .split(",")
+        .map(
+          x => x.trim()
+        );
 
-    const lat = Number(parts[0]);
-    const lng = Number(parts[1]);
+
 
     if (
-      Number.isNaN(lat) ||
-      Number.isNaN(lng) ||
-      lat < -90 ||
-      lat > 90 ||
-      lng < -180 ||
-      lng > 180
+      parts.length !== 2
     ) {
+
       return null;
+
     }
 
+
+
+    const lat =
+      Number(parts[0]);
+
+
+    const lng =
+      Number(parts[1]);
+
+
+
+    if (
+
+      Number.isNaN(lat) ||
+
+      Number.isNaN(lng) ||
+
+      lat < -90 ||
+
+      lat > 90 ||
+
+      lng < -180 ||
+
+      lng > 180
+
+    ) {
+
+      return null;
+
+    }
+
+
+
     return {
+
       lat,
+
       lng
+
     };
+
+
   }
 
-
-  // ==========================================================
-  // Google Maps
-  // ==========================================================
-
-  window.openGoogleMaps = function(coordinate) {
-
-    const url =
-      "https://www.google.com/maps/search/?api=1&query=" +
-      encodeURIComponent(coordinate);
-
-    window.open(url, "_blank");
-
-  };
 
 
   // ==========================================================
   // 時區判斷
-  //
-  // 目前先使用座標區域判斷。
-  // 後續如果需要，可以改成 Google Time Zone API。
   // ==========================================================
 
-  function getTimezone(lat, lng) {
+
+  function getTimezone(
+    lat,
+    lng
+  ) {
+
 
     // 台灣
+
     if (
+
       lat >= 21 &&
+
       lat <= 26 &&
+
       lng >= 119 &&
+
       lng <= 123
+
     ) {
+
       return "Asia/Taipei";
+
     }
+
 
 
     // 日本
+
     if (
+
       lat >= 24 &&
+
       lat <= 46 &&
+
       lng >= 123 &&
+
       lng <= 146
+
     ) {
+
       return "Asia/Tokyo";
+
     }
+
 
 
     // 韓國
+
     if (
+
       lat >= 33 &&
+
       lat <= 39 &&
+
       lng >= 124 &&
+
       lng <= 130
+
     ) {
+
       return "Asia/Seoul";
+
     }
+
 
 
     // 英國
+
     if (
+
       lat >= 49 &&
+
       lat <= 59 &&
+
       lng >= -9 &&
+
       lng <= 2
+
     ) {
+
       return "Europe/London";
+
     }
 
 
-    // 保加利亞 / Sofia
+
+    // 保加利亞
+
     if (
+
       lat >= 41 &&
+
       lat <= 44 &&
+
       lng >= 22 &&
+
       lng <= 29
+
     ) {
+
       return "Europe/Sofia";
+
     }
+
 
 
     // 美國東部
+
     if (
+
       lat >= 24 &&
+
       lat <= 50 &&
+
       lng >= -85 &&
+
       lng <= -65
+
     ) {
+
       return "America/New_York";
+
     }
+
 
 
     // 美國西部
+
     if (
+
       lat >= 30 &&
+
       lat <= 50 &&
+
       lng >= -125 &&
+
       lng <= -100
+
     ) {
+
       return "America/Los_Angeles";
+
     }
+
 
 
     // 中歐
+
     if (
+
       lat >= 42 &&
+
       lat <= 55 &&
+
       lng >= 5 &&
+
       lng <= 20
+
     ) {
+
       return "Europe/Berlin";
+
     }
 
 
-    // 預設使用 UTC
+
     return "UTC";
+
 
   }
 
 
+
   // ==========================================================
-  // 顯示當地時間
+  // 取得當地時間
   // ==========================================================
 
-  function getLocalTime(coordinate) {
 
-    const point = parseCoordinate(coordinate);
+  function getLocalTime(
+    coordinate
+  ) {
+
+
+    const point =
+      parseCoordinate(
+        coordinate
+      );
+
+
 
     if (!point) {
-      return "座標錯誤";
+
+      return "";
+
     }
 
+
+
     const timezone =
-      getTimezone(point.lat, point.lng);
+      getTimezone(
+        point.lat,
+        point.lng
+      );
 
-
-    const now = new Date();
 
 
     return new Intl.DateTimeFormat(
+
       "zh-TW",
+
       {
+
         timeZone: timezone,
+
+        year: "numeric",
+
+        month: "2-digit",
+
+        day: "2-digit",
+
         hour: "2-digit",
+
         minute: "2-digit",
+
         second: "2-digit",
+
         hour12: false
+
       }
-    ).format(now);
+
+    ).format(
+
+      new Date()
+
+    );
+
 
   }
 
 
+
   // ==========================================================
-  // 輸入座標時自動更新當地時間
+  // 座標輸入時更新當地時間
   // ==========================================================
+
 
   document
     .getElementById("coordinate")
-    .addEventListener("input", function() {
+    .addEventListener(
 
-      const coordinate = this.value;
+      "input",
 
-      const point = parseCoordinate(coordinate);
+      function() {
 
-      if (!point) {
 
-        document.getElementById("localTime").value = "";
+        document
+          .getElementById("localTime")
+          .value =
 
-        return;
+          getLocalTime(
+            this.value.trim()
+          );
+
 
       }
 
-      document.getElementById("localTime").value =
-        getLocalTime(coordinate);
+    );
 
-    });
 
 
   // ==========================================================
-  // mm:ss 轉秒數
+  // 剩餘時間 mm:ss → 秒
   // ==========================================================
 
-  function parseDuration(text) {
 
-    text = text.trim();
+  function parseDuration(
+    text
+  ) {
 
-    const parts = text.split(":");
 
-    if (parts.length !== 2) {
+    text =
+      text.trim();
+
+
+
+    if (!text) {
+
       return null;
+
     }
 
-    const minutes = Number(parts[0]);
 
-    const seconds = Number(parts[1]);
+
+    const parts =
+      text.split(":");
+
+
 
     if (
-      Number.isNaN(minutes) ||
-      Number.isNaN(seconds) ||
-      minutes < 0 ||
-      seconds < 0 ||
-      seconds >= 60
+      parts.length !== 2
     ) {
-      return null;
+
+      return "INVALID";
+
     }
 
-    return minutes * 60 + seconds;
+
+
+    const minutes =
+      Number(parts[0]);
+
+
+    const seconds =
+      Number(parts[1]);
+
+
+
+    if (
+
+      Number.isNaN(minutes) ||
+
+      Number.isNaN(seconds) ||
+
+      minutes < 0 ||
+
+      seconds < 0 ||
+
+      seconds >= 60
+
+    ) {
+
+      return "INVALID";
+
+    }
+
+
+
+    return (
+      minutes * 60 +
+      seconds
+    );
+
 
   }
 
 
+
   // ==========================================================
-  // 秒數轉 mm:ss
+  // 秒 → mm:ss
   // ==========================================================
 
-  function formatTime(totalSeconds) {
+
+  function formatTime(
+    totalSeconds
+  ) {
+
 
     totalSeconds =
-      Math.max(0, Math.floor(totalSeconds));
+      Math.max(
+        0,
+        Math.floor(
+          totalSeconds
+        )
+      );
+
+
 
     const minutes =
-      Math.floor(totalSeconds / 60);
+      Math.floor(
+        totalSeconds / 60
+      );
+
 
     const seconds =
       totalSeconds % 60;
 
+
+
     return (
-      String(minutes).padStart(2, "0") +
-      ":" +
-      String(seconds).padStart(2, "0")
+
+      String(minutes)
+        .padStart(2, "0")
+
+      +
+
+      ":"
+
+      +
+
+      String(seconds)
+        .padStart(2, "0")
+
     );
 
+
   }
+
 
 
   // ==========================================================
   // 新增 / 修改
   // ==========================================================
 
-  window.saveRecord = async function() {
 
-    const coordinate =
-      document.getElementById("coordinate").value.trim();
-
-    const type =
-      document.getElementById("type").value;
-
-    const people =
-      Number(document.getElementById("people").value);
-
-    const remainingTime =
-      document.getElementById("remainingTime").value.trim();
+  window.saveRecord =
+    async function() {
 
 
-    // 檢查座標
-
-    const point =
-      parseCoordinate(coordinate);
-
-    if (!point) {
-
-      alert(
-        "座標格式錯誤。\n\n請輸入例如：\n42.6957080, 23.3320190"
-      );
-
-      return;
-
-    }
+      const coordinate =
+        document
+          .getElementById("coordinate")
+          .value
+          .trim();
 
 
-    // 檢查時間
 
-    const duration =
-      parseDuration(remainingTime);
-
-    if (duration === null) {
-
-      alert(
-        "剩餘時間格式錯誤。\n\n請輸入例如：30:00"
-      );
-
-      return;
-
-    }
+      const location =
+        document
+          .getElementById("location")
+          .value
+          .trim();
 
 
-    if (duration <= 0) {
 
-      alert("剩餘時間必須大於 0 秒。");
-
-      return;
-
-    }
+      const type =
+        document
+          .getElementById("type")
+          .value;
 
 
-    // 重要：
-    // 儲存「結束時間」而不是單純儲存 30:00
-    //
-    // 這樣不同裝置才能同步倒數。
 
-    const endAt =
-      Timestamp.fromMillis(
-        Date.now() + duration * 1000
-      );
+      const people =
+        Number(
 
+          document
+            .getElementById("people")
+            .value
 
-    try {
-
-      if (editingId) {
-
-        await updateDoc(
-          doc(db, "mushroomRecords", editingId),
-          {
-            coordinate,
-            type,
-            people,
-            endAt,
-            updatedAt: serverTimestamp()
-          }
         );
 
-        showStatus("✅ 修改成功");
 
-      } else {
 
-        await addDoc(
-          recordsRef,
-          {
-            coordinate,
-            type,
-            people,
-            endAt,
-            createdAt: serverTimestamp()
-          }
+      const remainingTime =
+        document
+          .getElementById("remainingTime")
+          .value
+          .trim();
+
+
+
+      // 檢查座標
+
+
+      const point =
+        parseCoordinate(
+          coordinate
         );
 
-        showStatus("✅ 新增成功");
+
+
+      if (!point) {
+
+        alert(
+
+          "座標格式錯誤！\n\n" +
+
+          "請輸入例如：\n" +
+
+          "42.6957080, 23.3320190"
+
+        );
+
+
+        return;
 
       }
 
 
-      resetForm();
 
-    } catch (error) {
+      // 剩餘時間
 
-      console.error(error);
 
-      alert(
-        "儲存失敗：\n" +
-        error.message
-      );
+      const duration =
+        parseDuration(
+          remainingTime
+        );
 
-    }
 
-  };
+
+      if (
+        duration === "INVALID"
+      ) {
+
+        alert(
+
+          "剩餘時間格式錯誤！\n\n" +
+
+          "請輸入例如：30:00\n\n" +
+
+          "或留空。"
+
+        );
+
+
+        return;
+
+      }
+
+
+
+      let endAt =
+        null;
+
+
+
+      // 有填剩餘時間才建立倒數
+
+
+      if (
+        duration !== null
+      ) {
+
+
+        if (
+          duration <= 0
+        ) {
+
+          alert(
+            "剩餘時間必須大於 0。"
+          );
+
+          return;
+
+        }
+
+
+
+        endAt =
+          Timestamp.fromMillis(
+
+            Date.now() +
+
+            duration * 1000
+
+          );
+
+
+      }
+
+
+
+      try {
+
+
+        // 修改
+
+
+        if (
+          editingId
+        ) {
+
+
+          await updateDoc(
+
+            doc(
+
+              db,
+
+              "mushroomRecords",
+
+              editingId
+
+            ),
+
+            {
+
+              coordinate,
+
+              location,
+
+              type,
+
+              people,
+
+              endAt,
+
+              updatedAt:
+                serverTimestamp()
+
+            }
+
+          );
+
+
+          showStatus(
+            "✅ 修改成功"
+          );
+
+
+        }
+
+
+        // 新增
+
+
+        else {
+
+
+          await addDoc(
+
+            recordsRef,
+
+            {
+
+              coordinate,
+
+              location,
+
+              type,
+
+              people,
+
+              endAt,
+
+              createdAt:
+                serverTimestamp()
+
+            }
+
+          );
+
+
+          showStatus(
+            "✅ 新增成功"
+          );
+
+
+        }
+
+
+
+        resetForm();
+
+
+      }
+
+
+      catch (
+        error
+      ) {
+
+
+        console.error(
+          error
+        );
+
+
+        alert(
+
+          "儲存失敗：\n" +
+
+          error.message
+
+        );
+
+
+      }
+
+
+    };
+
 
 
   // ==========================================================
   // 刪除
   // ==========================================================
 
-  window.deleteRecord = async function(id) {
 
-    if (!confirm("確定要刪除這筆紀錄嗎？")) {
-      return;
-    }
+  window.deleteRecord =
+    async function(
+      id
+    ) {
 
 
-    try {
+      if (
 
-      await deleteDoc(
-        doc(db, "mushroomRecords", id)
-      );
+        !confirm(
+          "確定要刪除這筆紀錄嗎？"
+        )
 
-    } catch (error) {
+      ) {
 
-      console.error(error);
+        return;
 
-      alert(
-        "刪除失敗：\n" +
-        error.message
-      );
+      }
 
-    }
 
-  };
+
+      try {
+
+
+        await deleteDoc(
+
+          doc(
+
+            db,
+
+            "mushroomRecords",
+
+            id
+
+          )
+
+        );
+
+
+      }
+
+
+      catch (
+        error
+      ) {
+
+
+        alert(
+
+          "刪除失敗：\n" +
+
+          error.message
+
+        );
+
+
+      }
+
+
+    };
+
 
 
   // ==========================================================
   // 修改
   // ==========================================================
 
-  window.editRecord = function(id) {
 
-    const record =
-      records.find(r => r.id === id);
-
-    if (!record) {
-      return;
-    }
+  window.editRecord =
+    function(
+      id
+    ) {
 
 
-    editingId = id;
+      const record =
+        records.find(
+
+          r => r.id === id
+
+        );
 
 
-    document.getElementById("coordinate").value =
-      record.coordinate;
 
-    document.getElementById("type").value =
-      record.type;
+      if (
+        !record
+      ) {
 
-    document.getElementById("people").value =
-      record.people;
+        return;
 
-
-    const remainingSeconds =
-      Math.max(
-        0,
-        Math.floor(
-          (record.endAt.toMillis() - Date.now()) / 1000
-        )
-      );
+      }
 
 
-    document.getElementById("remainingTime").value =
-      formatTime(remainingSeconds);
+
+      editingId =
+        id;
 
 
-    document.getElementById("localTime").value =
-      getLocalTime(record.coordinate);
+
+      document
+        .getElementById("coordinate")
+        .value =
+
+        record.coordinate || "";
 
 
-    document.getElementById("saveBtn").textContent =
-      "💾 儲存修改";
 
-    document.getElementById("saveBtn").className =
-      "btn-edit";
+      document
+        .getElementById("location")
+        .value =
 
-
-    document.getElementById("cancelBtn").style.display =
-      "block";
+        record.location || "";
 
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
 
-  };
+      document
+        .getElementById("type")
+        .value =
+
+        record.type;
+
+
+
+      document
+        .getElementById("people")
+        .value =
+
+        record.people;
+
+
+
+      document
+        .getElementById("localTime")
+        .value =
+
+        getLocalTime(
+          record.coordinate
+        );
+
+
+
+      // 有倒數時間才顯示
+
+
+      if (
+        record.endAt
+      ) {
+
+
+        const remaining =
+
+          Math.max(
+
+            0,
+
+            Math.floor(
+
+              (
+
+                record.endAt.toMillis() -
+
+                Date.now()
+
+              )
+
+              / 1000
+
+            )
+
+          );
+
+
+
+        document
+          .getElementById("remainingTime")
+          .value =
+
+          formatTime(
+            remaining
+          );
+
+
+      }
+
+
+      else {
+
+
+        document
+          .getElementById("remainingTime")
+          .value = "";
+
+
+      }
+
+
+
+      document
+        .getElementById("saveBtn")
+        .textContent =
+
+        "💾 儲存修改";
+
+
+
+      document
+        .getElementById("saveBtn")
+        .className =
+
+        "btn-edit";
+
+
+
+      document
+        .getElementById("cancelBtn")
+        .style
+        .display =
+
+        "block";
+
+
+
+      window.scrollTo({
+
+        top: 0,
+
+        behavior: "smooth"
+
+      });
+
+
+    };
+
 
 
   // ==========================================================
   // 取消修改
   // ==========================================================
 
-  window.cancelEdit = function() {
 
-    resetForm();
+  window.cancelEdit =
+    function() {
 
-  };
+
+      resetForm();
+
+
+    };
+
 
 
   function resetForm() {
 
-    editingId = null;
 
-    document.getElementById("coordinate").value = "";
+    editingId =
+      null;
 
-    document.getElementById("type").value = "毒";
 
-    document.getElementById("people").value = "5";
 
-    document.getElementById("localTime").value = "";
+    document
+      .getElementById("coordinate")
+      .value = "";
 
-    document.getElementById("remainingTime").value = "";
 
-    document.getElementById("saveBtn").textContent =
+
+    document
+      .getElementById("location")
+      .value = "";
+
+
+
+    document
+      .getElementById("type")
+      .value = "毒";
+
+
+
+    document
+      .getElementById("people")
+      .value = "5";
+
+
+
+    document
+      .getElementById("localTime")
+      .value = "";
+
+
+
+    document
+      .getElementById("remainingTime")
+      .value = "";
+
+
+
+    document
+      .getElementById("saveBtn")
+      .textContent =
+
       "➕ 新增紀錄";
 
-    document.getElementById("saveBtn").className =
+
+
+    document
+      .getElementById("saveBtn")
+      .className =
+
       "btn-add";
 
-    document.getElementById("cancelBtn").style.display =
+
+
+    document
+      .getElementById("cancelBtn")
+      .style
+      .display =
+
       "none";
 
+
   }
+
 
 
   // ==========================================================
-  // 顯示訊息
+  // 複製座標
   // ==========================================================
 
-  function showStatus(message) {
 
-    const status =
-      document.getElementById("status");
+  window.copyCoordinate =
+    async function(
+      coordinate
+    ) {
 
-    status.textContent = message;
 
-    setTimeout(() => {
+      try {
 
-      status.textContent = "";
 
-    }, 2500);
+        await navigator.clipboard.writeText(
+          coordinate
+        );
 
-  }
+
+        showStatus(
+
+          "📋 已複製座標：" +
+
+          coordinate
+
+        );
+
+
+      }
+
+
+      catch (
+        error
+      ) {
+
+
+        // 舊版瀏覽器備用
+
+
+        const textarea =
+          document.createElement(
+            "textarea"
+          );
+
+
+        textarea.value =
+          coordinate;
+
+
+
+        document.body.appendChild(
+          textarea
+        );
+
+
+        textarea.select();
+
+
+
+        document.execCommand(
+          "copy"
+        );
+
+
+        textarea.remove();
+
+
+
+        showStatus(
+          "📋 已複製座標"
+        );
+
+
+      }
+
+
+    };
+
 
 
   // ==========================================================
   // Firestore 即時同步
   // ==========================================================
 
+
   const q =
+
     query(
+
       recordsRef,
-      orderBy("createdAt", "desc")
+
+      orderBy(
+
+        "createdAt",
+
+        "desc"
+
+      )
+
     );
 
 
+
   onSnapshot(
+
     q,
+
     snapshot => {
 
-      records = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+
+      records =
+
+        snapshot.docs.map(
+
+          document => ({
+
+            id:
+              document.id,
+
+            ...document.data()
+
+          })
+
+        );
+
+
 
       renderRecords();
 
+
     },
+
+
     error => {
 
-      console.error(error);
 
-      document.getElementById("status").textContent =
-        "⚠️ 無法連線 Firebase：" +
-        error.message;
+      console.error(
+        error
+      );
+
+
+      showStatus(
+
+        "⚠️ Firebase 連線錯誤：" +
+
+        error.message
+
+      );
+
 
     }
+
   );
 
 
+
   // ==========================================================
-  // 渲染資料
+  // 顯示紀錄
   // ==========================================================
 
-  window.renderRecords = function() {
 
-    const tbody =
-      document.getElementById("recordList");
-
-    const filter =
-      document.getElementById("filterType").value;
+  window.renderRecords =
+    function() {
 
 
-    tbody.innerHTML = "";
+      const tbody =
 
-
-    const filtered =
-      filter === "全部"
-        ? records
-        : records.filter(
-            record => record.type === filter
+        document
+          .getElementById(
+            "recordList"
           );
 
 
-    if (filtered.length === 0) {
 
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="6">
-            目前沒有紀錄
-          </td>
-        </tr>
-      `;
+      const filter =
 
-      return;
-
-    }
+        document
+          .getElementById(
+            "filterType"
+          )
+          .value;
 
 
-    filtered.forEach(record => {
 
-      const tr =
-        document.createElement("tr");
-
-
-      const coordinate =
-        record.coordinate || "";
+      tbody.innerHTML =
+        "";
 
 
-      const localTime =
-        getLocalTime(coordinate);
 
+      const filtered =
 
-      let remaining = 0;
+        filter === "全部"
 
+          ?
 
-      if (record.endAt) {
+          records
 
-        remaining =
-          Math.max(
-            0,
-            Math.floor(
-              (
-                record.endAt.toMillis() -
-                Date.now()
-              ) / 1000
-            )
+          :
+
+          records.filter(
+
+            record =>
+
+              record.type === filter
+
           );
+
+
+
+      if (
+
+        filtered.length === 0
+
+      ) {
+
+
+        tbody.innerHTML = `
+
+          <tr>
+
+            <td colspan="7">
+
+              目前沒有紀錄
+
+            </td>
+
+          </tr>
+
+        `;
+
+
+        return;
 
       }
 
 
-      const expired =
-        remaining <= 0;
+
+      filtered.forEach(
+        record => {
 
 
-      tr.innerHTML = `
-
-        <td>
-
-          <div class="coordinate">
-            ${escapeHtml(coordinate)}
-          </div>
-
-          <button
-            class="btn-map"
-            style="margin-top:6px;"
-            onclick="openGoogleMaps('${escapeAttribute(coordinate)}')"
-          >
-            📍 地圖
-          </button>
-
-        </td>
+          const tr =
+            document.createElement(
+              "tr"
+            );
 
 
-        <td>
-          ${escapeHtml(record.type || "")}
-        </td>
+
+          let remaining = null;
 
 
-        <td class="people">
-          ${record.people || ""}
-        </td>
+
+          if (
+            record.endAt
+          ) {
 
 
-        <td>
-          ${localTime}
-        </td>
+            remaining =
+
+              Math.max(
+
+                0,
+
+                Math.floor(
+
+                  (
+
+                    record.endAt.toMillis() -
+
+                    Date.now()
+
+                  )
+
+                  / 1000
+
+                )
+
+              );
 
 
-        <td>
-
-          <span
-            class="countdown ${expired ? "expired" : ""}"
-            data-end="${record.endAt ? record.endAt.toMillis() : 0}"
-          >
-            ${formatTime(remaining)}
-          </span>
-
-        </td>
+          }
 
 
-        <td>
 
-          <div class="actions">
+          const countdownText =
 
-            <button
-              class="btn-edit"
-              onclick="editRecord('${record.id}')"
-            >
-              ✏️ 修改
-            </button>
+            remaining === null
 
-            <button
-              class="btn-delete"
-              onclick="deleteRecord('${record.id}')"
-            >
-              🗑️ 刪除
-            </button>
+              ?
 
-          </div>
+              "-"
 
-        </td>
+              :
 
-      `;
+              formatTime(
+                remaining
+              );
 
 
-      tbody.appendChild(tr);
 
-    });
+          const expired =
 
-  };
+            remaining !== null &&
+
+            remaining <= 0;
 
 
-  // ==========================================================
-  // 每秒更新倒數 + 當地時間
-  // ==========================================================
 
-  setInterval(() => {
+          tr.innerHTML = `
 
-    document
-      .querySelectorAll(".countdown")
-      .forEach(element => {
 
-        const end =
-          Number(element.dataset.end);
+            <td>
 
-        const remaining =
-          Math.max(
-            0,
-            Math.floor(
-              (end - Date.now()) / 1000
-            )
+              <div class="coordinate">
+
+                ${escapeHtml(
+                  record.coordinate || ""
+                )}
+
+              </div>
+
+
+              <button
+
+                class="btn-copy"
+
+                style="margin-top:6px;"
+
+                onclick="copyCoordinate(
+                  '${escapeAttribute(
+                    record.coordinate || ""
+                  )}'
+                )"
+
+              >
+
+                📋 複製座標
+
+              </button>
+
+            </td>
+
+
+
+            <td>
+
+              ${escapeHtml(
+                record.location || "-"
+              )}
+
+            </td>
+
+
+
+            <td>
+
+              ${escapeHtml(
+                record.type || ""
+              )}
+
+            </td>
+
+
+
+            <td class="people">
+
+              ${record.people || ""}
+
+            </td>
+
+
+
+            <td>
+
+              ${getLocalTime(
+                record.coordinate
+              )}
+
+            </td>
+
+
+
+            <td>
+
+              <span
+
+                class="countdown ${
+                  expired
+                    ? "expired"
+                    : ""
+                }"
+
+                data-end="${
+                  record.endAt
+                    ? record.endAt.toMillis()
+                    : ""
+                }"
+
+              >
+
+                ${countdownText}
+
+              </span>
+
+            </td>
+
+
+
+            <td>
+
+              <div class="actions">
+
+
+                <button
+
+                  class="btn-edit"
+
+                  onclick="editRecord(
+                    '${record.id}'
+                  )"
+
+                >
+
+                  ✏️ 修改
+
+                </button>
+
+
+
+                <button
+
+                  class="btn-delete"
+
+                  onclick="deleteRecord(
+                    '${record.id}'
+                  )"
+
+                >
+
+                  🗑️ 刪除
+
+                </button>
+
+
+              </div>
+
+            </td>
+
+
+          `;
+
+
+
+          tbody.appendChild(
+            tr
           );
 
-
-        element.textContent =
-          formatTime(remaining);
-
-
-        if (remaining <= 0) {
-
-          element.classList.add("expired");
-
-        } else {
-
-          element.classList.remove("expired");
 
         }
 
-      });
+      );
 
 
-    // 更新當地時間
-
-    document
-      .querySelectorAll(".coordinate")
-      .forEach(element => {
-
-        // 當地時間會在 renderRecords 時更新
-        // 不在這裡重新處理座標。
-
-      });
+    };
 
 
-    // 表單中的當地時間
 
-    const coordinate =
-      document.getElementById("coordinate").value.trim();
+  // ==========================================================
+  // 每秒更新
+  // ==========================================================
 
 
-    if (coordinate) {
+  setInterval(
 
-      const point =
-        parseCoordinate(coordinate);
+    () => {
 
-      if (point) {
 
-        document.getElementById("localTime").value =
-          getLocalTime(coordinate);
+      // 更新倒數
+
+
+      document
+        .querySelectorAll(
+          ".countdown"
+        )
+        .forEach(
+
+          element => {
+
+
+            const end =
+              Number(
+                element.dataset.end
+              );
+
+
+
+            // 沒有倒數
+
+
+            if (
+              !end
+            ) {
+
+              return;
+
+            }
+
+
+
+            const remaining =
+
+              Math.max(
+
+                0,
+
+                Math.floor(
+
+                  (
+
+                    end -
+
+                    Date.now()
+
+                  )
+
+                  / 1000
+
+                )
+
+              );
+
+
+
+            element.textContent =
+
+              formatTime(
+                remaining
+              );
+
+
+
+            if (
+
+              remaining <= 0
+
+            ) {
+
+              element.classList.add(
+                "expired"
+              );
+
+
+            }
+
+
+            else {
+
+
+              element.classList.remove(
+                "expired"
+              );
+
+
+            }
+
+
+          }
+
+        );
+
+
+
+      // 更新表單當地時間
+
+
+      const coordinate =
+
+        document
+          .getElementById("coordinate")
+          .value
+          .trim();
+
+
+
+      if (
+        coordinate
+      ) {
+
+
+        document
+          .getElementById("localTime")
+          .value =
+
+          getLocalTime(
+            coordinate
+          );
+
 
       }
 
-    }
 
-  }, 1000);
+      // 每秒重新渲染當地時間
+
+      renderRecords();
+
+
+    },
+
+    1000
+
+  );
+
+
+
+  // ==========================================================
+  // 狀態訊息
+  // ==========================================================
+
+
+  function showStatus(
+    message
+  ) {
+
+
+    const status =
+
+      document
+        .getElementById(
+          "status"
+        );
+
+
+
+    status.textContent =
+      message;
+
+
+
+    setTimeout(
+
+      () => {
+
+        status.textContent =
+          "";
+
+      },
+
+      2500
+
+    );
+
+
+  }
+
 
 
   // ==========================================================
   // 防止 HTML 注入
   // ==========================================================
 
-  function escapeHtml(text) {
+
+  function escapeHtml(
+    text
+  ) {
+
 
     return String(text)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+
+      .replace(
+        /</g,
+        "&lt;"
+      )
+
+      .replace(
+        />/g,
+        "&gt;"
+      )
+
+      .replace(
+        /"/g,
+        "&quot;"
+      )
+
+      .replace(
+        /'/g,
+        "&#039;"
+      );
+
 
   }
 
 
-  function escapeAttribute(text) {
+
+  function escapeAttribute(
+    text
+  ) {
+
 
     return String(text)
-      .replace(/\\/g, "\\\\")
-      .replace(/'/g, "\\'");
+
+      .replace(
+        /\\/g,
+        "\\\\"
+      )
+
+      .replace(
+        /'/g,
+        "\\'"
+      );
+
 
   }
 
