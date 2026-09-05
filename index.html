@@ -12,356 +12,209 @@
 
 <title>🍄 菇點紀錄</title>
 
-
 <style>
 
 * {
   box-sizing: border-box;
 }
 
-
 body {
-
   margin: 0;
-
   padding: 20px;
-
   background: #f5f5f5;
-
-  font-family:
-
-    Arial,
-
-    "Microsoft JhengHei",
-
-    sans-serif;
-
+  font-family: Arial, "Microsoft JhengHei", sans-serif;
   color: #222;
-
 }
-
 
 .container {
-
   max-width: 1400px;
-
   margin: auto;
-
 }
-
 
 h1 {
-
   margin-bottom: 20px;
-
 }
-
 
 .card {
-
   background: white;
-
   padding: 20px;
-
   border-radius: 12px;
-
-  box-shadow:
-
-    0 2px 10px
-
-    rgba(0,0,0,0.08);
-
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   margin-bottom: 20px;
-
 }
-
 
 .form-grid {
-
   display: grid;
-
-  grid-template-columns:
-
-    repeat(3, 1fr);
-
+  grid-template-columns: repeat(3, 1fr);
   gap: 15px;
-
 }
-
 
 label {
-
   font-weight: bold;
-
   display: block;
-
   margin-bottom: 6px;
-
 }
-
 
 input,
 select,
 button {
-
   width: 100%;
-
   padding: 11px;
-
   font-size: 15px;
-
   border-radius: 8px;
-
-  border:
-
-    1px solid #ccc;
-
+  border: 1px solid #ccc;
 }
-
 
 button {
-
   cursor: pointer;
-
   border: none;
-
   color: white;
-
 }
-
 
 button:hover {
-
   opacity: 0.85;
-
 }
-
 
 .btn-add {
-
   background: #198754;
-
 }
-
 
 .btn-delete {
-
   background: #dc3545;
-
 }
-
 
 .btn-copy {
-
   background: #6f42c1;
-
 }
-
 
 .button-row {
-
   margin-top: 15px;
-
 }
-
 
 .filter {
-
   max-width: 250px;
-
 }
-
 
 .table-wrapper {
-
   overflow-x: auto;
-
 }
-
 
 table {
-
   width: 100%;
-
   border-collapse: collapse;
-
   min-width: 1100px;
-
 }
-
 
 th,
 td {
-
   padding: 12px;
-
-  border-bottom:
-
-    1px solid #ddd;
-
+  border-bottom: 1px solid #ddd;
   text-align: center;
-
   vertical-align: middle;
-
 }
-
 
 th {
-
   background: #eeeeee;
-
 }
-
 
 .coordinate {
-
   font-family: monospace;
-
   font-size: 14px;
-
 }
-
 
 .countdown {
-
   font-size: 18px;
-
   font-family: monospace;
-
   font-weight: bold;
-
 }
-
 
 .expired {
-
   color: #dc3545;
-
 }
-
 
 .people {
-
   font-weight: bold;
-
 }
 
+.timezone {
+  font-size: 12px;
+  color: #777;
+  margin-top: 3px;
+}
 
 .status {
-
   margin-top: 12px;
-
   color: #666;
-
 }
-
 
 @media (max-width: 900px) {
 
   .form-grid {
-
-    grid-template-columns:
-
-      repeat(2, 1fr);
-
+    grid-template-columns: repeat(2, 1fr);
   }
 
 }
-
 
 @media (max-width: 600px) {
 
   body {
-
     padding: 10px;
-
   }
-
 
   .form-grid {
-
     grid-template-columns: 1fr;
-
   }
 
-
   .card {
-
     padding: 15px;
-
   }
 
 }
-
 
 </style>
 
 </head>
 
 
-
 <body>
 
-
 <div class="container">
-
 
 <h1>🍄 菇點紀錄</h1>
 
 
-
-<!-- =========================
-     新增紀錄
-========================= -->
-
+<!-- 新增紀錄 -->
 
 <div class="card">
 
-
 <div class="form-grid">
 
-
-<!-- 座標 -->
 
 <div>
 
 <label>📍 座標</label>
 
 <input
-
   id="coordinate"
-
   type="text"
-
-  placeholder="例如：42.6957080, 23.3320190"
-
+  placeholder="例如：51.7608750, -1.2670480"
 >
 
 </div>
 
-
-
-<!-- 地點 -->
 
 <div>
 
 <label>📌 地點（非必填）</label>
 
 <input
-
   id="location"
-
   type="text"
-
-  placeholder="例如：Sofia"
-
+  placeholder="例如：Oxford"
 >
 
 </div>
 
-
-
-<!-- 菇點類型 -->
 
 <div>
 
@@ -379,9 +232,7 @@ th {
 
 <option value="火">火</option>
 
-<option value="巨大活動">
-巨大活動
-</option>
+<option value="巨大活動">巨大活動</option>
 
 <option value="一般活動免費">
 一般活動免費
@@ -393,9 +244,7 @@ th {
 
 <option value="大水">大水</option>
 
-<option value="大水晶">
-大水晶
-</option>
+<option value="大水晶">大水晶</option>
 
 <option value="大火">大火</option>
 
@@ -403,9 +252,6 @@ th {
 
 </div>
 
-
-
-<!-- 剩餘人數 -->
 
 <div>
 
@@ -428,62 +274,41 @@ th {
 </div>
 
 
-
-<!-- 當地時間 -->
-
 <div>
 
 <label>🕐 當地時間</label>
 
 <input
-
   id="localTime"
-
   type="text"
-
   readonly
-
   placeholder="輸入座標後自動取得"
-
 >
 
 </div>
 
-
-
-<!-- 剩餘時間 -->
 
 <div>
 
-<label>
-⏳ 剩餘時間（非必填）
-</label>
+<label>⏳ 剩餘時間（非必填）</label>
 
 <input
-
   id="remainingTime"
-
   type="text"
-
   placeholder="例如：30:00"
-
 >
 
 </div>
 
 
 </div>
-
 
 
 <div class="button-row">
 
 <button
-
   class="btn-add"
-
   onclick="saveRecord()"
-
 >
 
 ➕ 新增紀錄
@@ -493,13 +318,9 @@ th {
 </div>
 
 
-
 <div
-
   class="status"
-
   id="status"
-
 ></div>
 
 
@@ -507,32 +328,19 @@ th {
 
 
 
-<!-- =========================
-     篩選
-========================= -->
-
+<!-- 篩選 -->
 
 <div class="card">
 
-
-<label>
-📊 依菇點類型篩選
-</label>
-
+<label>📊 依菇點類型篩選</label>
 
 <select
-
   id="filterType"
-
   class="filter"
-
   onchange="renderRecords()"
-
 >
 
-<option value="全部">
-全部
-</option>
+<option value="全部">全部</option>
 
 <option value="毒">毒</option>
 
@@ -544,9 +352,7 @@ th {
 
 <option value="火">火</option>
 
-<option value="巨大活動">
-巨大活動
-</option>
+<option value="巨大活動">巨大活動</option>
 
 <option value="一般活動免費">
 一般活動免費
@@ -558,82 +364,53 @@ th {
 
 <option value="大水">大水</option>
 
-<option value="大水晶">
-大水晶
-</option>
+<option value="大水晶">大水晶</option>
 
 <option value="大火">大火</option>
 
 </select>
 
-
 </div>
 
 
 
-<!-- =========================
-     紀錄表格
-========================= -->
-
+<!-- 紀錄 -->
 
 <div class="card">
 
-
 <div class="table-wrapper">
 
-
 <table>
-
 
 <thead>
 
 <tr>
 
-<th>
-座標
-</th>
+<th>座標</th>
 
-<th>
-地點
-</th>
+<th>地點</th>
 
-<th>
-菇點類型
-</th>
+<th>菇點類型</th>
 
-<th>
-剩餘人數
-</th>
+<th>剩餘人數</th>
 
-<th>
-當地時間
-</th>
+<th>當地時間</th>
 
-<th>
-剩餘時間
-</th>
+<th>剩餘時間</th>
 
-<th>
-操作
-</th>
+<th>操作</th>
 
 </tr>
 
 </thead>
 
-
-
-<tbody
-
-  id="recordList"
-
->
+<tbody id="recordList">
 
 </tbody>
 
-
 </table>
 
+</div>
 
 </div>
 
@@ -641,28 +418,30 @@ th {
 </div>
 
 
-</div>
+
+<!-- ==================================
+     時區資料庫
+================================== -->
+
+
+<script src="https://cdn.jsdelivr.net/npm/@photostructure/tz-lookup@11.6.1/tz.js"></script>
 
 
 
 <script type="module">
 
 
-/* =========================
+/* ==================================
    Firebase
-========================= */
+================================== */
 
 
 import {
-
   initializeApp
-
 }
 
 from
-
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
 
 
 import {
@@ -694,99 +473,45 @@ import {
 }
 
 from
-
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
 
-/* =========================
+/* ==================================
    Firebase 設定
-
-   ↓↓↓
-
-   改成你的 Firebase 資料
-
-========================= */
+================================== */
 
 
 const firebaseConfig = {
 
-
   apiKey:
-
     "你的_API_KEY",
 
-
   authDomain:
-
     "你的_PROJECT_ID.firebaseapp.com",
 
-
   projectId:
-
     "你的_PROJECT_ID",
 
-
   storageBucket:
-
     "你的_PROJECT_ID.appspot.com",
 
-
   messagingSenderId:
-
     "你的_MESSAGING_SENDER_ID",
 
-
   appId:
-
     "你的_APP_ID"
-
 
 };
 
 
 
-/* =========================
-   Google Time Zone API Key
-
-   ↓↓↓
-
-   填入你的 Google API Key
-
-========================= */
-
-
-const GOOGLE_TIMEZONE_API_KEY =
-
-  "你的_GOOGLE_TIMEZONE_API_KEY";
-
-
-
-/* =========================
-   Firebase 初始化
-
-   persistentLocalCache：
-
-   瀏覽器關閉後
-   本機快取仍保留
-
-   Firestore：
-
-   雲端資料永久保留
-
-========================= */
-
-
 const app =
-
-  initializeApp(
-    firebaseConfig
-  );
+  initializeApp(firebaseConfig);
 
 
 
 const db =
-
   initializeFirestore(
 
     app,
@@ -810,7 +535,6 @@ const db =
 
 
 const recordsRef =
-
   collection(
 
     db,
@@ -824,76 +548,44 @@ const recordsRef =
 let records = [];
 
 
-/* =========================
+
+/* ==================================
    座標解析
-========================= */
+================================== */
 
 
-function parseCoordinate(
-
-  text
-
-) {
-
+function parseCoordinate(text) {
 
   const parts =
-
     text
-
       .split(",")
-
-      .map(
-
-        x => x.trim()
-
-      );
+      .map(x => x.trim());
 
 
-
-  if (
-
-    parts.length !== 2
-
-  ) {
-
+  if (parts.length !== 2) {
     return null;
-
   }
 
 
-
   const lat =
-
     Number(parts[0]);
 
 
   const lng =
-
     Number(parts[1]);
-
 
 
   if (
 
-    Number.isNaN(lat)
+    Number.isNaN(lat) ||
 
-    ||
+    Number.isNaN(lng) ||
 
-    Number.isNaN(lng)
+    lat < -90 ||
 
-    ||
+    lat > 90 ||
 
-    lat < -90
-
-    ||
-
-    lat > 90
-
-    ||
-
-    lng < -180
-
-    ||
+    lng < -180 ||
 
     lng > 180
 
@@ -904,507 +596,155 @@ function parseCoordinate(
   }
 
 
-
   return {
-
     lat,
-
     lng
-
   };
-
 
 }
 
 
 
-/* =========================
-   Google Time Zone API
-
-   經緯度
-   ↓
-   真正的時區
-
-========================= */
+/* ==================================
+   全球座標 → 時區
+================================== */
 
 
-async function getTimezone(
-
-  coordinate
-
-) {
-
+function getTimezone(coordinate) {
 
   const point =
-
-    parseCoordinate(
-      coordinate
-    );
+    parseCoordinate(coordinate);
 
 
-
-  if (
-
-    !point
-
-  ) {
-
+  if (!point) {
     return null;
-
   }
-
-
-
-  const timestamp =
-
-    Math.floor(
-
-      Date.now() / 1000
-
-    );
-
-
-
-  const url =
-
-    "https://maps.googleapis.com/maps/api/timezone/json"
-
-    +
-
-    "?location="
-
-    +
-
-    encodeURIComponent(
-
-      point.lat +
-
-      "," +
-
-      point.lng
-
-    )
-
-    +
-
-    "&timestamp="
-
-    +
-
-    timestamp
-
-    +
-
-    "&key="
-
-    +
-
-    GOOGLE_TIMEZONE_API_KEY;
-
 
 
   try {
 
-
-    const response =
-
-      await fetch(
-        url
-      );
-
-
-
-    const data =
-
-      await response.json();
-
-
-
-    if (
-
-      data.status === "OK"
-
-    ) {
-
-
-      return {
-
-        timeZoneId:
-
-          data.timeZoneId,
-
-        rawOffset:
-
-          data.rawOffset,
-
-        dstOffset:
-
-          data.dstOffset
-
-      };
-
-
-    }
-
-
-
-    console.error(
-
-      "Time Zone API Error:",
-
-      data
-
+    return tzlookup(
+      point.lat,
+      point.lng
     );
-
-
-
-    return null;
-
 
   }
 
-
-  catch (
-
-    error
-
-  ) {
-
+  catch (error) {
 
     console.error(
-
+      "Timezone error:",
       error
-
     );
-
 
     return null;
 
+  }
+
+}
+
+
+
+/* ==================================
+   時區 → 當地時間
+================================== */
+
+
+function getLocalTime(timezone) {
+
+  try {
+
+    return new Intl.DateTimeFormat(
+
+      "zh-TW",
+
+      {
+
+        timeZone: timezone,
+
+        year: "numeric",
+
+        month: "2-digit",
+
+        day: "2-digit",
+
+        hour: "2-digit",
+
+        minute: "2-digit",
+
+        second: "2-digit",
+
+        hour12: false
+
+      }
+
+    ).format(new Date());
 
   }
 
+  catch (error) {
+
+    console.error(
+      error
+    );
+
+    return null;
+
+  }
 
 }
 
 
 
-/* =========================
-   顯示當地時間
-
-   使用：
-
-   Google API 回傳的
-
-   UTC Offset
-
-   + DST Offset
-
-========================= */
-
-
-function formatLocalTime(
-
-  rawOffset,
-
-  dstOffset
-
-) {
-
-
-  const now =
-
-    Date.now();
-
-
-
-  const localTime =
-
-    new Date(
-
-      now
-
-      +
-
-      (
-
-        rawOffset +
-
-        dstOffset
-
-      )
-
-      *
-
-      1000
-
-    );
-
-
-
-  const year =
-
-    localTime
-
-      .getUTCFullYear();
-
-
-
-  const month =
-
-    String(
-
-      localTime
-
-        .getUTCMonth()
-
-        + 1
-
-    )
-
-    .padStart(
-
-      2,
-
-      "0"
-
-    );
-
-
-
-  const day =
-
-    String(
-
-      localTime
-
-        .getUTCDate()
-
-    )
-
-    .padStart(
-
-      2,
-
-      "0"
-
-    );
-
-
-
-  const hour =
-
-    String(
-
-      localTime
-
-        .getUTCHours()
-
-    )
-
-    .padStart(
-
-      2,
-
-      "0"
-
-    );
-
-
-
-  const minute =
-
-    String(
-
-      localTime
-
-        .getUTCMinutes()
-
-    )
-
-    .padStart(
-
-      2,
-
-      "0"
-
-    );
-
-
-
-  const second =
-
-    String(
-
-      localTime
-
-        .getUTCSeconds()
-
-    )
-
-    .padStart(
-
-      2,
-
-      "0"
-
-    );
-
-
-
-  return (
-
-    year
-
-    +
-
-    "/"
-
-    +
-
-    month
-
-    +
-
-    "/"
-
-    +
-
-    day
-
-    +
-
-    " "
-
-    +
-
-    hour
-
-    +
-
-    ":"
-
-    +
-
-    minute
-
-    +
-
-    ":"
-
-    +
-
-    second
-
-  );
-
-
-}
-
-
-
-/* =========================
-   座標輸入
-
-   自動取得時區
-
-========================= */
+/* ==================================
+   座標輸入時
+   自動判斷時區
+================================== */
 
 
 document
-
-  .getElementById(
-
-    "coordinate"
-
-  )
-
+  .getElementById("coordinate")
   .addEventListener(
 
-    "change",
+    "input",
 
-    async function() {
-
+    function() {
 
       const coordinate =
-
         this.value.trim();
 
 
-
-      const localTimeInput =
-
+      const localTime =
         document.getElementById(
-
           "localTime"
-
         );
 
 
+      if (!parseCoordinate(coordinate)) {
 
-      if (
-
-        !parseCoordinate(
-          coordinate
-        )
-
-      ) {
-
-
-        localTimeInput.value =
-
-          "";
-
+        localTime.value = "";
 
         return;
 
-
       }
-
-
-
-      localTimeInput.value =
-
-        "取得時區中...";
-
 
 
       const timezone =
-
-        await getTimezone(
-          coordinate
-        );
+        getTimezone(coordinate);
 
 
+      if (!timezone) {
 
-      if (
-
-        !timezone
-
-      ) {
-
-
-        localTimeInput.value =
-
-          "無法取得";
-
+        localTime.value =
+          "無法判斷時區";
 
         return;
-
 
       }
 
 
-
-      localTimeInput.value =
-
-        formatLocalTime(
-
-          timezone.rawOffset,
-
-          timezone.dstOffset
-
-        );
-
+      localTime.value =
+        getLocalTime(timezone);
 
     }
 
@@ -1412,96 +752,47 @@ document
 
 
 
-/* =========================
-   mm:ss → 秒
-
-========================= */
-
-
-function parseDuration(
-
-  text
-
-) {
+/* ==================================
+   剩餘時間
+================================== */
 
 
-  text =
+function parseDuration(text) {
 
-    text.trim();
-
-
-
-  /* 非必填 */
+  text = text.trim();
 
 
-  if (
-
-    !text
-
-  ) {
-
+  if (!text) {
     return null;
-
   }
-
 
 
   const parts =
-
-    text.split(
-      ":"
-    );
+    text.split(":");
 
 
-
-  if (
-
-    parts.length !== 2
-
-  ) {
-
+  if (parts.length !== 2) {
     return "INVALID";
-
   }
 
 
-
   const minutes =
-
-    Number(
-      parts[0]
-    );
+    Number(parts[0]);
 
 
   const seconds =
-
-    Number(
-      parts[1]
-    );
-
+    Number(parts[1]);
 
 
   if (
 
-    Number.isNaN(
-      minutes
-    )
+    Number.isNaN(minutes) ||
 
-    ||
+    Number.isNaN(seconds) ||
 
-    Number.isNaN(
-      seconds
-    )
+    minutes < 0 ||
 
-    ||
-
-    minutes < 0
-
-    ||
-
-    seconds < 0
-
-    ||
+    seconds < 0 ||
 
     seconds >= 60
 
@@ -1512,90 +803,49 @@ function parseDuration(
   }
 
 
-
   return (
 
-    minutes
-
-    *
-
-    60
-
-    +
+    minutes * 60 +
 
     seconds
 
   );
 
-
 }
 
 
 
-/* =========================
+/* ==================================
    秒 → mm:ss
-========================= */
+================================== */
 
 
-function formatDuration(
-
-  totalSeconds
-
-) {
-
+function formatDuration(totalSeconds) {
 
   totalSeconds =
-
     Math.max(
 
       0,
 
-      Math.floor(
-
-        totalSeconds
-
-      )
+      Math.floor(totalSeconds)
 
     );
 
 
-
   const minutes =
-
     Math.floor(
-
-      totalSeconds
-
-      /
-
-      60
-
+      totalSeconds / 60
     );
 
 
   const seconds =
-
-    totalSeconds
-
-    %
-
-    60;
-
+    totalSeconds % 60;
 
 
   return (
 
-    String(
-      minutes
-    )
-
-    .padStart(
-
-      2,
-
-      "0"
-
-    )
+    String(minutes)
+      .padStart(2, "0")
 
     +
 
@@ -1603,275 +853,145 @@ function formatDuration(
 
     +
 
-    String(
-      seconds
-    )
-
-    .padStart(
-
-      2,
-
-      "0"
-
-    )
+    String(seconds)
+      .padStart(2, "0")
 
   );
-
 
 }
 
 
 
-/* =========================
-   新增紀錄
-========================= */
+/* ==================================
+   新增
+================================== */
 
 
 window.saveRecord =
-
   async function() {
 
 
     const coordinate =
-
       document
-
-        .getElementById(
-
-          "coordinate"
-
-        )
-
+        .getElementById("coordinate")
         .value
-
         .trim();
-
 
 
     const location =
-
       document
-
-        .getElementById(
-
-          "location"
-
-        )
-
+        .getElementById("location")
         .value
-
         .trim();
 
 
-
     const type =
-
       document
-
-        .getElementById(
-
-          "type"
-
-        )
-
+        .getElementById("type")
         .value;
 
 
-
     const people =
-
       Number(
 
         document
-
-          .getElementById(
-
-            "people"
-
-          )
-
+          .getElementById("people")
           .value
 
       );
 
 
-
     const remainingTime =
-
       document
-
-        .getElementById(
-
-          "remainingTime"
-
-        )
-
+        .getElementById("remainingTime")
         .value
-
         .trim();
 
 
 
-    /* 檢查座標 */
+    /* 座標 */
 
-
-    if (
-
-      !parseCoordinate(
-        coordinate
-      )
-
-    ) {
-
+    if (!parseCoordinate(coordinate)) {
 
       alert(
 
-        "座標格式錯誤！\n\n"
+        "座標格式錯誤！\n\n" +
 
-        +
+        "例如：\n" +
 
-        "例如：\n"
-
-        +
-
-        "42.6957080, 23.3320190"
+        "51.7608750, -1.2670480"
 
       );
 
-
       return;
-
 
     }
 
 
 
-    /* 檢查剩餘時間 */
+    /* 時區 */
 
+    const timezone =
+      getTimezone(coordinate);
+
+
+    if (!timezone) {
+
+      alert(
+        "無法判斷這個座標的時區。"
+      );
+
+      return;
+
+    }
+
+
+
+    /* 剩餘時間 */
 
     const duration =
-
       parseDuration(
         remainingTime
       );
 
 
-
-    if (
-
-      duration === "INVALID"
-
-    ) {
-
+    if (duration === "INVALID") {
 
       alert(
 
-        "剩餘時間格式錯誤！\n\n"
+        "剩餘時間格式錯誤！\n\n" +
 
-        +
-
-        "請輸入例如：30:00\n\n"
-
-        +
+        "例如：30:00\n\n" +
 
         "也可以留空。"
 
       );
 
-
       return;
-
 
     }
 
 
 
-    let endAt =
-
-      null;
+    let endAt = null;
 
 
-
-    /* 有輸入才倒數 */
-
-
-    if (
-
-      duration !== null
-
-    ) {
-
+    if (duration !== null) {
 
       endAt =
-
         Timestamp.fromMillis(
 
-          Date.now()
+          Date.now() +
 
-          +
-
-          duration
-
-          *
-
-          1000
+          duration * 1000
 
         );
 
-
     }
 
-
-
-    /* 取得時區 */
-
-
-    showStatus(
-
-      "🌍 正在取得座標時區..."
-
-    );
-
-
-
-    const timezone =
-
-      await getTimezone(
-        coordinate
-      );
-
-
-
-    if (
-
-      !timezone
-
-    ) {
-
-
-      alert(
-
-        "無法取得此座標的時區。\n\n"
-
-        +
-
-        "請確認 Google Time Zone API Key 是否設定正確。"
-
-      );
-
-
-      return;
-
-
-    }
-
-
-
-    /* 寫入 Firestore */
 
 
     try {
-
 
       await addDoc(
 
@@ -1887,29 +1007,11 @@ window.saveRecord =
 
           people,
 
+          timezone,
+
           endAt,
 
-
-          /* 儲存真正時區 */
-
-
-          timeZoneId:
-
-            timezone.timeZoneId,
-
-
-          rawOffset:
-
-            timezone.rawOffset,
-
-
-          dstOffset:
-
-            timezone.dstOffset,
-
-
           createdAt:
-
             serverTimestamp()
 
         }
@@ -1917,72 +1019,48 @@ window.saveRecord =
       );
 
 
-
       showStatus(
-
         "✅ 已儲存到雲端"
-
       );
-
 
 
       resetForm();
 
-
     }
 
 
-    catch (
+    catch (error) {
 
-      error
-
-    ) {
-
-
-      console.error(
-        error
-      );
-
+      console.error(error);
 
 
       alert(
 
-        "儲存失敗：\n\n"
-
-        +
+        "儲存失敗：\n\n" +
 
         error.message
 
       );
 
-
     }
-
 
   };
 
 
 
-/* =========================
+/* ==================================
    刪除
-========================= */
+================================== */
 
 
 window.deleteRecord =
-
-  async function(
-
-    id
-
-  ) {
+  async function(id) {
 
 
     if (
 
       !confirm(
-
         "確定要刪除這筆紀錄嗎？"
-
       )
 
     ) {
@@ -1992,292 +1070,169 @@ window.deleteRecord =
     }
 
 
-
     try {
-
 
       await deleteDoc(
 
         doc(
-
           db,
-
           "mushroomRecords",
-
           id
-
         )
 
       );
 
-
     }
 
 
-    catch (
-
-      error
-
-    ) {
-
+    catch (error) {
 
       alert(
 
-        "刪除失敗：\n"
-
-        +
+        "刪除失敗：\n" +
 
         error.message
 
       );
 
-
     }
-
 
   };
 
 
 
-/* =========================
+/* ==================================
    複製座標
-========================= */
+================================== */
 
 
 window.copyCoordinate =
-
-  async function(
-
-    coordinate
-
-  ) {
+  async function(coordinate) {
 
 
     try {
 
-
       await navigator
-
         .clipboard
-
-        .writeText(
-
-          coordinate
-
-        );
-
+        .writeText(coordinate);
 
 
       showStatus(
-
         "📋 已複製座標"
-
       );
-
 
     }
 
 
-    catch (
-
-      error
-
-    ) {
-
+    catch (error) {
 
       const textarea =
-
         document.createElement(
-
           "textarea"
-
         );
 
 
-
       textarea.value =
-
         coordinate;
 
 
-
       document.body.appendChild(
-
         textarea
-
       );
-
 
 
       textarea.select();
 
 
-
       document.execCommand(
-
         "copy"
-
       );
-
 
 
       textarea.remove();
 
 
-
       showStatus(
-
         "📋 已複製座標"
-
       );
 
-
     }
-
 
   };
 
 
 
-/* =========================
-   清空表單
-========================= */
+/* ==================================
+   清空
+================================== */
 
 
 function resetForm() {
 
-
   document
-
-    .getElementById(
-
-      "coordinate"
-
-    )
-
-    .value =
-
-    "";
-
+    .getElementById("coordinate")
+    .value = "";
 
 
   document
-
-    .getElementById(
-
-      "location"
-
-    )
-
-    .value =
-
-    "";
-
+    .getElementById("location")
+    .value = "";
 
 
   document
-
-    .getElementById(
-
-      "type"
-
-    )
-
-    .value =
-
-    "毒";
-
+    .getElementById("type")
+    .value = "毒";
 
 
   document
-
-    .getElementById(
-
-      "people"
-
-    )
-
-    .value =
-
-    "5";
-
+    .getElementById("people")
+    .value = "5";
 
 
   document
-
-    .getElementById(
-
-      "localTime"
-
-    )
-
-    .value =
-
-    "";
-
+    .getElementById("localTime")
+    .value = "";
 
 
   document
-
-    .getElementById(
-
-      "remainingTime"
-
-    )
-
-    .value =
-
-    "";
-
+    .getElementById("remainingTime")
+    .value = "";
 
 }
 
 
 
-/* =========================
-   Firestore 即時同步
-
-   資料永久讀取
-
-========================= */
+/* ==================================
+   Firebase 即時同步
+================================== */
 
 
 const q =
-
   query(
 
     recordsRef,
 
     orderBy(
-
       "createdAt",
-
       "desc"
-
     )
 
   );
-
 
 
 onSnapshot(
 
   q,
 
-
   snapshot => {
 
-
     records =
-
       snapshot.docs.map(
 
         document => ({
 
           id:
-
             document.id,
-
 
           ...document.data()
 
@@ -2286,32 +1241,23 @@ onSnapshot(
       );
 
 
-
     renderRecords();
-
 
   },
 
 
   error => {
 
-
-    console.error(
-      error
-    );
-
+    console.error(error);
 
 
     showStatus(
 
-      "⚠️ Firebase 錯誤："
-
-      +
+      "⚠️ Firebase 錯誤：" +
 
       error.message
 
     );
-
 
   }
 
@@ -2319,44 +1265,30 @@ onSnapshot(
 
 
 
-/* =========================
+/* ==================================
    顯示紀錄
-========================= */
+================================== */
 
 
 window.renderRecords =
-
   function() {
 
 
     const tbody =
-
       document.getElementById(
-
         "recordList"
-
       );
 
 
-
     const filter =
-
       document
-
         .getElementById(
-
           "filterType"
-
         )
-
         .value;
 
 
-
-    tbody.innerHTML =
-
-      "";
-
+    tbody.innerHTML = "";
 
 
     const filtered =
@@ -2372,19 +1304,13 @@ window.renderRecords =
         records.filter(
 
           record =>
-
             record.type === filter
 
         );
 
 
 
-    if (
-
-      filtered.length === 0
-
-    ) {
-
+    if (filtered.length === 0) {
 
       tbody.innerHTML = `
 
@@ -2400,322 +1326,228 @@ window.renderRecords =
 
       `;
 
-
-
       return;
-
 
     }
 
 
 
-    filtered.forEach(
-
-      record => {
+    filtered.forEach(record => {
 
 
-        const tr =
+      const tr =
+        document.createElement(
+          "tr"
+        );
 
-          document.createElement(
 
-            "tr"
+
+      /* 剩餘時間 */
+
+      let remaining = null;
+
+
+      if (record.endAt) {
+
+        remaining =
+
+          Math.max(
+
+            0,
+
+            Math.floor(
+
+              (
+
+                record.endAt.toMillis() -
+
+                Date.now()
+
+              ) / 1000
+
+            )
 
           );
 
+      }
 
 
-        /* 剩餘時間 */
+      const countdownText =
+
+        remaining === null
+
+          ?
+
+          "-"
+
+          :
+
+          formatDuration(
+            remaining
+          );
 
 
-        let remaining =
+      const expired =
 
-          null;
+        remaining !== null &&
 
-
-
-        if (
-
-          record.endAt
-
-        ) {
-
-
-          remaining =
-
-            Math.max(
-
-              0,
-
-              Math.floor(
-
-                (
-
-                  record.endAt.toMillis()
-
-                  -
-
-                  Date.now()
-
-                )
-
-                /
-
-                1000
-
-              )
-
-            );
-
-
-        }
+        remaining <= 0;
 
 
 
-        const countdownText =
+      /* 當地時間 */
 
-          remaining === null
-
-            ?
-
-            "-"
-
-            :
-
-            formatDuration(
-
-              remaining
-
-            );
+      const timezone =
+        record.timezone || "";
 
 
+      const localTime =
+        timezone
 
-        const expired =
+          ?
 
-          remaining !== null
+          getLocalTime(timezone)
 
-          &&
-
-          remaining <= 0;
-
-
-
-        /* 當地時間 */
-
-
-        let localTime =
+          :
 
           "-";
 
 
 
-        if (
+      tr.innerHTML = `
 
-          record.rawOffset !== undefined
+        <td>
 
-        ) {
+          <div class="coordinate">
 
+            ${escapeHtml(
+              record.coordinate || ""
+            )}
 
-          localTime =
+          </div>
 
-            formatLocalTime(
+          <button
 
-              record.rawOffset,
+            class="btn-copy"
 
-              record.dstOffset
+            style="margin-top:8px;"
 
-            );
+            onclick="copyCoordinate(
 
-
-        }
-
-
-
-        tr.innerHTML = `
-
-
-          <td>
-
-
-            <div class="coordinate">
-
-              ${escapeHtml(
-
+              '${escapeAttribute(
                 record.coordinate || ""
+              )}'
 
-              )}
+            )"
 
-            </div>
+          >
 
+            📋 複製座標
 
-            <button
+          </button>
 
-              class="btn-copy"
-
-              style="margin-top:8px;"
-
-              onclick="copyCoordinate(
-                '${escapeAttribute(
-                  record.coordinate || ""
-                )}'
-              )"
-
-            >
-
-              📋 複製座標
-
-            </button>
+        </td>
 
 
-          </td>
+        <td>
+
+          ${escapeHtml(
+            record.location || "-"
+          )}
+
+        </td>
 
 
+        <td>
 
-          <td>
+          ${escapeHtml(
+            record.type || ""
+          )}
 
-            ${escapeHtml(
-
-              record.location || "-"
-
-            )}
-
-          </td>
+        </td>
 
 
+        <td class="people">
 
-          <td>
+          ${record.people || ""}
 
-            ${escapeHtml(
-
-              record.type || ""
-
-            )}
-
-          </td>
+        </td>
 
 
+        <td>
 
-          <td class="people">
+          <div>
 
-            ${record.people || ""}
+            ${localTime}
 
-          </td>
+          </div>
+
+          <div class="timezone">
+
+            ${escapeHtml(timezone)}
+
+          </div>
+
+        </td>
 
 
+        <td>
 
-          <td
+          <span
 
-            class="local-time"
-
-            data-raw="${
-
-              record.rawOffset ?? ""
-
+            class="countdown ${
+              expired
+                ? "expired"
+                : ""
             }"
 
-            data-dst="${
-
-              record.dstOffset ?? ""
-
+            data-end="${
+              record.endAt
+                ? record.endAt.toMillis()
+                : ""
             }"
 
           >
 
-            ${localTime}
+            ${countdownText}
 
-          </td>
+          </span>
 
-
-
-          <td>
+        </td>
 
 
-            <span
+        <td>
 
-              class="countdown ${
-                expired
-                  ? "expired"
-                  : ""
-              }"
+          <button
 
+            class="btn-delete"
 
-              data-end="${
+            onclick="deleteRecord(
+              '${record.id}'
+            )"
 
-                record.endAt
+          >
 
-                  ?
+            🗑️ 刪除
 
-                  record.endAt.toMillis()
+          </button>
 
-                  :
+        </td>
 
-                  ""
-
-              }"
-
-            >
+      `;
 
 
-              ${countdownText}
+      tbody.appendChild(tr);
 
-
-            </span>
-
-
-          </td>
-
-
-
-          <td>
-
-
-            <button
-
-              class="btn-delete"
-
-              onclick="deleteRecord(
-                '${record.id}'
-              )"
-
-            >
-
-              🗑️ 刪除
-
-            </button>
-
-
-          </td>
-
-
-        `;
-
-
-
-        tbody.appendChild(
-
-          tr
-
-        );
-
-
-      }
-
-    );
-
+    });
 
   };
 
 
 
-/* =========================
-   每秒更新
-
-   倒數
-
-   +
-
-   當地時間
-
-========================= */
+/* ==================================
+   每秒更新時間
+================================== */
 
 
 setInterval(
@@ -2725,222 +1557,142 @@ setInterval(
 
     /* 倒數 */
 
-
     document
-
       .querySelectorAll(
-
         ".countdown"
-
       )
-
-      .forEach(
-
-        element => {
+      .forEach(element => {
 
 
-          const end =
-
-            Number(
-
-              element.dataset.end
-
-            );
+        const end =
+          Number(
+            element.dataset.end
+          );
 
 
-
-          if (
-
-            !end
-
-          ) {
-
-            return;
-
-          }
+        if (!end) {
+          return;
+        }
 
 
+        const remaining =
 
-          const remaining =
+          Math.max(
 
-            Math.max(
+            0,
 
-              0,
+            Math.floor(
 
-              Math.floor(
+              (
 
-                (
+                end -
 
-                  end
+                Date.now()
 
-                  -
+              ) / 1000
 
-                  Date.now()
+            )
 
-                )
-
-                /
-
-                1000
-
-              )
-
-            );
+          );
 
 
-
-          element.textContent =
-
-            formatDuration(
-
-              remaining
-
-            );
+        element.textContent =
+          formatDuration(
+            remaining
+          );
 
 
+        if (remaining <= 0) {
 
-          if (
-
-            remaining <= 0
-
-          ) {
-
-
-            element.classList.add(
-
-              "expired"
-
-            );
-
-
-          }
-
-
-          else {
-
-
-            element.classList.remove(
-
-              "expired"
-
-            );
-
-
-          }
-
+          element.classList.add(
+            "expired"
+          );
 
         }
 
-      );
+      });
 
 
 
-    /* 表格當地時間 */
-
+    /* 當地時間 */
 
     document
-
       .querySelectorAll(
-
-        ".local-time"
-
+        "td"
       )
+      .forEach(td => {
 
-      .forEach(
-
-        element => {
-
-
-          const raw =
-
-            Number(
-
-              element.dataset.raw
-
-            );
+        const timezoneElement =
+          td.querySelector(
+            ".timezone"
+          );
 
 
-          const dst =
-
-            Number(
-
-              element.dataset.dst
-
-            );
+        if (!timezoneElement) {
+          return;
+        }
 
 
-
-          if (
-
-            !Number.isNaN(raw)
-
-          ) {
+        const timezone =
+          timezoneElement.textContent;
 
 
-            element.textContent =
+        const timeElement =
+          td.querySelector(
+            "div:first-child"
+          );
 
-              formatLocalTime(
 
-                raw,
+        if (timeElement && timezone) {
 
-                dst
+          const time =
+            getLocalTime(timezone);
 
-              );
 
+          if (time) {
+
+            timeElement.textContent =
+              time;
 
           }
 
-
         }
 
-      );
+      });
 
 
 
-    /* 表單當地時間 */
-
+    /* 新增區的當地時間 */
 
     const coordinate =
-
       document
-
         .getElementById(
-
           "coordinate"
-
         )
-
         .value
-
         .trim();
 
 
+    if (parseCoordinate(coordinate)) {
 
-    if (
-
-      coordinate
-
-      &&
-
-      parseCoordinate(
-
-        coordinate
-
-      )
-
-    ) {
+      const timezone =
+        getTimezone(coordinate);
 
 
-      // 表單時間只更新
-      // 已取得 API 結果後才會處理
-      // 避免每秒呼叫 Google API
+      if (timezone) {
 
+        document
+          .getElementById(
+            "localTime"
+          )
+          .value =
+            getLocalTime(timezone);
+
+      }
 
     }
 
-
   },
-
 
   1000
 
@@ -2948,168 +1700,81 @@ setInterval(
 
 
 
-/* =========================
-   狀態訊息
-========================= */
+/* ==================================
+   狀態
+================================== */
 
 
-function showStatus(
-
-  message
-
-) {
-
+function showStatus(message) {
 
   const status =
-
     document.getElementById(
-
       "status"
-
     );
 
 
-
   status.textContent =
-
     message;
-
 
 
   setTimeout(
 
     () => {
 
-
       if (
-
-        status.textContent ===
-
-        message
-
+        status.textContent === message
       ) {
 
-
-        status.textContent =
-
-          "";
-
+        status.textContent = "";
 
       }
 
-
     },
-
 
     3000
 
   );
 
+}
+
+
+
+/* ==================================
+   防止 HTML 注入
+================================== */
+
+
+function escapeHtml(text) {
+
+  return String(text)
+
+    .replace(/&/g, "&amp;")
+
+    .replace(/</g, "&lt;")
+
+    .replace(/>/g, "&gt;")
+
+    .replace(/"/g, "&quot;")
+
+    .replace(/'/g, "&#039;");
 
 }
 
 
 
-/* =========================
-   HTML 安全處理
-========================= */
+function escapeAttribute(text) {
 
+  return String(text)
 
-function escapeHtml(
+    .replace(/\\/g, "\\\\")
 
-  text
-
-) {
-
-
-  return String(
-
-    text
-
-  )
-
-  .replace(
-
-    /&/g,
-
-    "&amp;"
-
-  )
-
-  .replace(
-
-    /</g,
-
-    "&lt;"
-
-  )
-
-  .replace(
-
-    />/g,
-
-    "&gt;"
-
-  )
-
-  .replace(
-
-    /"/g,
-
-    "&quot;"
-
-  )
-
-  .replace(
-
-    /'/g,
-
-    "&#039;"
-
-  );
-
-
-}
-
-
-
-function escapeAttribute(
-
-  text
-
-) {
-
-
-  return String(
-
-    text
-
-  )
-
-  .replace(
-
-    /\\/g,
-
-    "\\\\"
-
-  )
-
-  .replace(
-
-    /'/g,
-
-    "\\'"
-
-  );
-
+    .replace(/'/g, "\\'");
 
 }
 
 
 </script>
 
-
 </body>
 
 </html>
-```
